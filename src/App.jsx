@@ -225,7 +225,38 @@ export default function App() {
 
         {/* Footer */}
         <footer className="app-footer">
-          <p>Timora &bull; Focus. Time. Anywhere.</p>
+          <div className="footer-inner">
+            <div className="footer-brand">
+              <span className="footer-logo-text">Timora</span>
+              <span className="footer-tagline">Focus. Time. Anywhere.</span>
+            </div>
+            <div className="footer-links">
+              <a
+                href="https://timora-digital-worldwide-clock-with.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-link"
+              >
+                Live App
+              </a>
+              <a
+                href="https://github.com/vidhyawalke/Timora-Digital-Worldwide-Clock-with-Pomodoro"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-link"
+              >
+                GitHub
+              </a>
+            </div>
+            <div className="footer-copy">
+              <span>
+                &copy; {new Date().getFullYear()} Vidhya Walke. All rights reserved.
+              </span>
+              <span className="footer-legal">
+                Proprietary software &mdash; unauthorized reproduction or distribution is prohibited.
+              </span>
+            </div>
+          </div>
         </footer>
 
         {/* Google Chrome Style Wallpaper Customizer Modal */}
