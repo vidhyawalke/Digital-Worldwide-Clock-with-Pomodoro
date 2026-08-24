@@ -6,6 +6,7 @@ import Pomodoro from './components/Pomodoro';
 import YouTubePlayer from './components/YouTubePlayer';
 import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
+import ShortcutsModal from './components/ShortcutsModal';
 import { WALLPAPER_CATEGORIES } from './data/wallpapers';
 
 /**
@@ -15,8 +16,8 @@ import { WALLPAPER_CATEGORIES } from './data/wallpapers';
  * 1. Persistent DOM mounting: Keeping media players (YouTube) mounted permanently in the DOM 
  *    so video/audio playback does not reset or pause when switching between tabs.
  * 2. PWA Installation Event Listener (`beforeinstallprompt`).
- * 3. CSS-based view toggling (`display: block/none`) to preserve component state.
- * 4. Lifting State Up: Managing global preferences (tab, 24h format, theme, wallpaper).
+ * 3. Global Keyboard Shortcuts Listener with event target filtering (ignoring when typing in inputs).
+ * 4. CSS-based view toggling (`display: block/none`) to preserve component state.
  */
 export default function App() {
   // 1. Current active view tab: 'dashboard' | 'clock' | 'pomodoro'
@@ -44,8 +45,9 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 5. Desktop App Install State
+  // 5. Desktop App Install State & Shortcuts Modal
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
   // Catch PWA beforeinstallprompt event for desktop app download
@@ -57,6 +59,39 @@ export default function App() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore shortcut keys if user is typing in an input or textarea
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+        return;
+      }
+
+      if (e.key === '1') {
+        setCurrentTab('dashboard');
+      } else if (e.key === '2') {
+        setCurrentTab('clock');
+      } else if (e.key === '3') {
+        setCurrentTab('pomodoro');
+      } else if (e.key.toLowerCase() === 'b') {
+        setIsBgPickerOpen(prev => !prev);
+      } else if (e.key.toLowerCase() === 'd') {
+        setIsInstallModalOpen(prev => !prev);
+      } else if (e.key === '?') {
+        setIsShortcutsModalOpen(prev => !prev);
+      } else if (e.key.toLowerCase() === 'f') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Save preferences to localStorage
@@ -136,6 +171,7 @@ export default function App() {
           setTheme={setTheme}
           onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
           onOpenInstallModal={() => setIsInstallModalOpen(true)}
+          onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
         />
 
         <main>
@@ -194,6 +230,12 @@ export default function App() {
           onClose={() => setIsInstallModalOpen(false)}
           installPrompt={installPrompt}
           onInstallSuccess={() => setInstallPrompt(null)}
+        />
+
+        {/* Keyboard Shortcuts Modal */}
+        <ShortcutsModal
+          isOpen={isShortcutsModalOpen}
+          onClose={() => setIsShortcutsModalOpen(false)}
         />
       </div>
     </div>
