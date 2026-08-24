@@ -158,37 +158,45 @@ export default function App() {
         />
 
         <main>
-          {/* Main Digital Clock Banner */}
+          {/* Main Digital Clock Banner (Compact Header) */}
           <div style={{ display: (currentTab === 'dashboard' || currentTab === 'clock') ? 'block' : 'none' }}>
             <DigitalClock is24Hour={is24Hour} />
           </div>
 
-          {/* Tab 1: Combined Dashboard */}
+          {/* Tab 1: Combined High-Efficiency Dashboard (No Deep Scrolling) */}
           <div style={{ display: currentTab === 'dashboard' ? 'block' : 'none' }}>
             <div className="dashboard-grid">
-              <div>
+              {/* Left Column: World Clock & Live Weather */}
+              <div className="dashboard-col">
                 <WorldClock is24Hour={is24Hour} />
                 <WeatherWidget />
               </div>
-              <div>
+
+              {/* Right Column: Pomodoro Focus Station & YouTube Study Music */}
+              <div className="dashboard-col">
                 <Pomodoro />
+                <YouTubePlayer />
               </div>
             </div>
           </div>
 
           {/* Tab 2: World Clock Focus View */}
           <div style={{ display: currentTab === 'clock' ? 'block' : 'none', maxWidth: '1000px', margin: '0 auto' }}>
-            <WorldClock is24Hour={is24Hour} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.25rem', alignItems: 'start' }}>
+              <WorldClock is24Hour={is24Hour} />
+              <div>
+                <WeatherWidget />
+                <YouTubePlayer />
+              </div>
+            </div>
           </div>
 
           {/* Tab 3: Pomodoro Focus View */}
-          <div style={{ display: currentTab === 'pomodoro' ? 'block' : 'none', maxWidth: '640px', margin: '0 auto' }}>
-            <Pomodoro />
-          </div>
-
-          {/* Persistent YouTube Media Player */}
-          <div className="persistent-yt-section">
-            <YouTubePlayer />
+          <div style={{ display: currentTab === 'pomodoro' ? 'block' : 'none', maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
+              <Pomodoro />
+              <YouTubePlayer />
+            </div>
           </div>
         </main>
 
