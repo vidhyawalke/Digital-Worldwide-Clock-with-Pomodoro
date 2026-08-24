@@ -118,7 +118,7 @@ export default function App() {
 
     if (currentWallpaper.url) {
       return {
-        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.88)), url(${currentWallpaper.url})`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.3)), url(${currentWallpaper.url})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
