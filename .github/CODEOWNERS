@@ -1,5 +1,5 @@
-# CODEOWNERS - Mandatory Code Ownership & Review Enforcement
-# Each file in this repository is proprietary and owned exclusively by Vidhya Walke.
-# Any proposed changes across any directory require review and sign-off.
+# CODEOWNERS
+# All files in this repository require review and approval from the repository owner
+# before any changes can be merged.
 
-* @vidzz22 @vidhyawalke
+* @vidhyawalke
