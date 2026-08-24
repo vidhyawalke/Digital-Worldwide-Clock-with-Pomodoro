@@ -6,13 +6,13 @@
     <link rel="apple-touch-icon" href="./timora-logo.jpg" />
     <link rel="manifest" href="./manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ff2a85" />
-    <meta name="description" content="Timora - Focus. Time. Anywhere. Digital Worldwide Clock and Pomodoro Focus Timer with YouTube study player." />
+    <meta name="theme-color" content="#FF4D6D" />
+    <meta name="description" content="Timora - Focus. Time. Anywhere. A world clock & pomodoro app that keeps you focused, wherever you are." />
     <title>Timora - Worldwide Clock & Pomodoro</title>
-    <!-- Google Fonts: Outfit for sleek modern UI, JetBrains Mono for crisp digital time readout -->
+    <!-- Google Fonts: Poppins (Design Specification) and JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>
@@ -21,8 +21,8 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Timora PWA Service Worker Registered', reg))
-            .catch(err => console.log('Timora SW Registration failed: ', err));
+            .then(reg => console.log('Timora SW Registered', reg))
+            .catch(err => console.log('Timora SW error:', err));
         });
       }
     </script>

@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Sun, Moon, Plus, Trash2, Globe2 } from 'lucide-react';
 
-/**
- * WorldClock Component
- * 
- * Beginner React Concepts:
- * 1. Array State & Mapping: Storing an array of objects in state and rendering with `.map()`.
- * 2. Controlled Inputs: Binding input value to `searchQuery` state and `onChange` handler.
- * 3. Array Filtering: Creating derived lists for instant real-time searching.
- * 4. State Immutability: Adding and removing items without mutating original arrays.
- */
-
 const INITIAL_CITIES = [
   { id: '1', name: 'New York', country: 'United States', timezone: 'America/New_York' },
   { id: '2', name: 'London', country: 'United Kingdom', timezone: 'Europe/London' },
@@ -21,9 +11,6 @@ const INITIAL_CITIES = [
   { id: '7', name: 'Sydney', country: 'Australia', timezone: 'Australia/Sydney' },
   { id: '8', name: 'San Francisco', country: 'United States', timezone: 'America/Los_Angeles' },
   { id: '9', name: 'Mumbai', country: 'India', timezone: 'Asia/Kolkata' },
-  { id: '10', name: 'Berlin', country: 'Germany', timezone: 'Europe/Berlin' },
-  { id: '11', name: 'Toronto', country: 'Canada', timezone: 'America/Toronto' },
-  { id: '12', name: 'Hong Kong', country: 'Hong Kong', timezone: 'Asia/Hong_Kong' },
 ];
 
 export default function WorldClock({ is24Hour }) {
@@ -71,22 +58,31 @@ export default function WorldClock({ is24Hour }) {
     setShowAddCity(false);
   };
 
-  const handleResetDefaults = () => {
-    setCities(INITIAL_CITIES);
-  };
-
   const getTimeInZone = (timezone) => {
     try {
       const options = {
         timeZone: timezone,
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
         hour12: !is24Hour,
       };
       return new Intl.DateTimeFormat([], options).format(currentTime);
     } catch (e) {
-      return '--:--:--';
+      return '--:--';
+    }
+  };
+
+  const getDateInZone = (timezone) => {
+    try {
+      const options = {
+        timeZone: timezone,
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      };
+      return new Intl.DateTimeFormat([], options).format(currentTime);
+    } catch (e) {
+      return '';
     }
   };
 
@@ -104,20 +100,6 @@ export default function WorldClock({ is24Hour }) {
     }
   };
 
-  const getUtcOffset = (timezone) => {
-    try {
-      const dateInZone = new Date(currentTime.toLocaleString('en-US', { timeZone: timezone }));
-      const dateInUtc = new Date(currentTime.toLocaleString('en-US', { timeZone: 'UTC' }));
-      const diffMinutes = Math.round((dateInZone - dateInUtc) / (1000 * 60));
-      const hours = Math.floor(Math.abs(diffMinutes) / 60);
-      const mins = Math.abs(diffMinutes) % 60;
-      const sign = diffMinutes >= 0 ? '+' : '-';
-      return `UTC${sign}${hours}${mins ? `:${mins.toString().padStart(2, '0')}` : ''}`;
-    } catch (e) {
-      return 'UTC';
-    }
-  };
-
   const filteredCities = cities.filter(city => 
     city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     city.country.toLowerCase().includes(searchQuery.toLowerCase())
@@ -126,10 +108,10 @@ export default function WorldClock({ is24Hour }) {
   return (
     <section className="world-clock-container">
       {/* Header and Filter */}
-      <div className="section-header">
-        <h2 className="section-title">
+      <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
           <Globe2 size={20} color="var(--primary)" />
-          <span>Worldwide Timezones</span>
+          <span>World Clock</span>
         </h2>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -138,16 +120,15 @@ export default function WorldClock({ is24Hour }) {
             <input
               type="text"
               className="search-input"
-              placeholder="Search world cities..."
+              placeholder="Search cities..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
           <button 
-            className="control-btn"
+            className="secondary-btn"
             onClick={() => setShowAddCity(!showAddCity)}
-            title="Add new city"
           >
             <Plus size={15} />
             <span>Add City</span>
@@ -157,118 +138,89 @@ export default function WorldClock({ is24Hour }) {
 
       {/* Add City Modal/Form */}
       {showAddCity && (
-        <form onSubmit={handleAddCity} className="glass-card settings-drawer" style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem' }}>Add New Location</h3>
-          <div className="settings-grid">
-            <div className="setting-field">
-              <label>City Name</label>
+        <form onSubmit={handleAddCity} className="glass-card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem', fontWeight: '600' }}>Add New Location</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>City Name</label>
               <input
                 type="text"
                 placeholder="e.g. Seoul"
                 value={newCityName}
                 onChange={(e) => setNewCityName(e.target.value)}
                 required
+                style={{ width: '100%', padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
               />
             </div>
-            <div className="setting-field">
-              <label>Country / Region</label>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Country</label>
               <input
                 type="text"
                 placeholder="e.g. South Korea"
                 value={newCityCountry}
                 onChange={(e) => setNewCityCountry(e.target.value)}
+                style={{ width: '100%', padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
               />
             </div>
-            <div className="setting-field">
-              <label>IANA Timezone</label>
+            <div>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Timezone</label>
               <input
                 type="text"
                 placeholder="e.g. Asia/Seoul"
                 value={newCityTz}
                 onChange={(e) => setNewCityTz(e.target.value)}
                 required
+                style={{ width: '100%', padding: '0.45rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
               />
             </div>
           </div>
           <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-            <button 
-              type="button" 
-              className="control-btn" 
-              onClick={() => setShowAddCity(false)}
-            >
+            <button type="button" className="secondary-btn" onClick={() => setShowAddCity(false)}>
               Cancel
             </button>
-            <button 
-              type="submit" 
-              className="btn-primary-action" 
-              style={{ padding: '0.45rem 1.25rem', fontSize: '0.85rem' }}
-            >
-              Save City
+            <button type="submit" className="primary-btn">
+              Save
             </button>
           </div>
         </form>
       )}
 
-      {/* Cities Grid */}
+      {/* World Clock Cards Grid (Template Spec: New York, Sun, 09:30 AM, May 24, 2025) */}
       <div className="world-clock-grid">
         {filteredCities.map((city) => {
           const isDay = isDaytimeInZone(city.timezone);
           const timeString = getTimeInZone(city.timezone);
-          const offsetString = getUtcOffset(city.timezone);
+          const dateString = getDateInZone(city.timezone);
 
           return (
-            <div key={city.id} className={`glass-card city-card ${isDay ? 'day' : 'night'}`}>
-              <div className="city-header">
-                <div className="city-info">
-                  <h3>{city.name}</h3>
-                  <p>{city.country}</p>
-                </div>
-                <div className="day-indicator">
-                  {isDay ? (
-                    <>
-                      <Sun size={12} color="var(--warning)" />
-                      <span>Day</span>
-                    </>
-                  ) : (
-                    <>
-                      <Moon size={12} color="var(--primary)" />
-                      <span>Night</span>
-                    </>
-                  )}
-                </div>
+            <div key={city.id} className="world-clock-card">
+              <div className="wc-header">
+                <span className="wc-city">{city.name}</span>
+                {isDay ? (
+                  <Sun size={18} color="#F59E0B" />
+                ) : (
+                  <Moon size={18} color="#8B5CF6" />
+                )}
               </div>
 
-              <div className="city-time">
+              <div className="wc-time">
                 {timeString}
               </div>
 
-              <div className="city-footer">
-                <span className="offset-tag">{offsetString}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="wc-date">{dateString}</span>
                 <button
-                  className="city-toggle-btn"
                   onClick={() => handleRemoveCity(city.id)}
                   title={`Remove ${city.name}`}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }}
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>
           );
         })}
       </div>
-
-      {filteredCities.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-          <p>No cities found matching "{searchQuery}"</p>
-          <button 
-            className="control-btn" 
-            onClick={handleResetDefaults} 
-            style={{ margin: '1rem auto 0' }}
-          >
-            Restore Default Cities
-          </button>
-        </div>
-      )}
     </section>
   );
 }
