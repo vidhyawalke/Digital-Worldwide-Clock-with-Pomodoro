@@ -2,10 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏰</text></svg>" />
+    <link rel="icon" type="image/jpeg" href="./timora-logo.jpg" />
+    <link rel="apple-touch-icon" href="./timora-logo.jpg" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Digital Worldwide Clock and Pomodoro Focus Timer with live world time zones and audio alerts." />
-    <title>Worldwide Clock & Pomodoro</title>
+    <meta name="theme-color" content="#ff2a85" />
+    <meta name="description" content="Timora - Focus. Time. Anywhere. Digital Worldwide Clock and Pomodoro Focus Timer with YouTube study player." />
+    <title>Timora - Worldwide Clock & Pomodoro</title>
     <!-- Google Fonts: Outfit for sleek modern UI, JetBrains Mono for crisp digital time readout -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,5 +17,14 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Timora PWA Service Worker Registered', reg))
+            .catch(err => console.log('Timora SW Registration failed: ', err));
+        });
+      }
+    </script>
   </body>
 </html>

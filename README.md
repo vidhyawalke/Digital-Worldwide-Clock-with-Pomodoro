@@ -1,14 +1,16 @@
-# Digital Worldwide Clock with Pomodoro
+# Timora
 
-A web application built with React that provides a digital local clock, international world timezones, a Pomodoro focus timer, custom background wallpapers, and an embedded YouTube video player.
+A web and desktop productivity application built with React that provides a digital local clock, international world timezones, a Pomodoro focus timer, custom background wallpapers, and an embedded YouTube player.
 
 ## Features
+
+Timora brand interface with desktop app installation support.
 
 Digital clock with 12 hour and 24 hour display options.
 
 World clock showing live local times across major cities.
 
-Pomodoro countdown timer with custom durations and chime alerts.
+Pomodoro countdown timer with session history records and chime alerts.
 
 Embedded YouTube player for study beats and custom video links.
 
@@ -22,4 +24,4 @@ Run npm install to install dependencies.
 
 Run npm run dev to start the local development server.
 
-Run npm run build to create a production bundle for hosting on GitHub Pages.
+Run npm run build to create a production bundle for hosting on Vercel and GitHub Pages.

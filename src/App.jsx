@@ -5,6 +5,7 @@ import WorldClock from './components/WorldClock';
 import Pomodoro from './components/Pomodoro';
 import YouTubePlayer from './components/YouTubePlayer';
 import BackgroundPicker from './components/BackgroundPicker';
+import InstallModal from './components/InstallModal';
 import { WALLPAPER_CATEGORIES } from './data/wallpapers';
 
 /**
@@ -13,8 +14,9 @@ import { WALLPAPER_CATEGORIES } from './data/wallpapers';
  * Beginner React Concepts:
  * 1. Persistent DOM mounting: Keeping media players (YouTube) mounted permanently in the DOM 
  *    so video/audio playback does not reset or pause when switching between tabs.
- * 2. CSS-based view toggling (`display: block/none`) to preserve component state and playback.
- * 3. Lifting State Up: Managing global preferences (tab, 24h format, theme, wallpaper).
+ * 2. PWA Installation Event Listener (`beforeinstallprompt`).
+ * 3. CSS-based view toggling (`display: block/none`) to preserve component state.
+ * 4. Lifting State Up: Managing global preferences (tab, 24h format, theme, wallpaper).
  */
 export default function App() {
   // 1. Current active view tab: 'dashboard' | 'clock' | 'pomodoro'
@@ -41,6 +43,21 @@ export default function App() {
     const saved = localStorage.getItem('daily_refresh_pref');
     return saved !== null ? JSON.parse(saved) : false;
   });
+
+  // 5. Desktop App Install State
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  // Catch PWA beforeinstallprompt event for desktop app download
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
 
   // Save preferences to localStorage
   useEffect(() => {
@@ -118,6 +135,7 @@ export default function App() {
           theme={theme}
           setTheme={setTheme}
           onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
+          onOpenInstallModal={() => setIsInstallModalOpen(true)}
         />
 
         <main>
@@ -148,7 +166,7 @@ export default function App() {
             <Pomodoro />
           </div>
 
-          {/* Persistent YouTube Media Player: Mounted once so video/audio never stops on tab switch */}
+          {/* Persistent YouTube Media Player */}
           <div className="persistent-yt-section">
             <YouTubePlayer />
           </div>
@@ -156,7 +174,7 @@ export default function App() {
 
         {/* Footer */}
         <footer className="app-footer">
-          <p>Digital Worldwide Clock & Pomodoro Focus Timer</p>
+          <p>Timora &bull; Focus. Time. Anywhere.</p>
         </footer>
 
         {/* Google Chrome Style Wallpaper Customizer Modal */}
@@ -168,6 +186,14 @@ export default function App() {
           onResetDefault={handleResetDefaultBackground}
           isDailyRefresh={isDailyRefresh}
           setIsDailyRefresh={setIsDailyRefresh}
+        />
+
+        {/* Desktop App Download & Install Modal */}
+        <InstallModal
+          isOpen={isInstallModalOpen}
+          onClose={() => setIsInstallModalOpen(false)}
+          installPrompt={installPrompt}
+          onInstallSuccess={() => setInstallPrompt(null)}
         />
       </div>
     </div>

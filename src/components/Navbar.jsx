@@ -1,5 +1,14 @@
 import React from 'react';
-import { Clock, Timer, LayoutDashboard, Palette, Hourglass, Image as ImageIcon } from 'lucide-react';
+import { 
+  Clock, 
+  Timer, 
+  LayoutDashboard, 
+  Palette, 
+  Hourglass, 
+  Image as ImageIcon,
+  Download
+} from 'lucide-react';
+import timoraLogo from '../assets/timora-logo.jpg';
 
 /**
  * Navbar Component
@@ -15,7 +24,8 @@ export default function Navbar({
   setIs24Hour, 
   theme, 
   setTheme,
-  onOpenBackgroundPicker
+  onOpenBackgroundPicker,
+  onOpenInstallModal
 }) {
   const themes = [
     { id: 'default', label: 'Default' },
@@ -32,14 +42,16 @@ export default function Navbar({
 
   return (
     <header className="navbar">
-      {/* Brand Logo */}
+      {/* Brand Logo with Official Timora Icon */}
       <div className="logo-group">
-        <div className="logo-icon">
-          <Clock size={24} color="#ffffff" />
-        </div>
+        <img 
+          src={timoraLogo} 
+          alt="Timora Logo" 
+          className="brand-logo-img" 
+        />
         <div className="logo-text">
-          <h1>ChronoFocus</h1>
-          <span>Worldwide Clock & Pomodoro</span>
+          <h1>Timora</h1>
+          <span>Focus. Time. Anywhere.</span>
         </div>
       </div>
 
@@ -73,7 +85,7 @@ export default function Navbar({
         </button>
       </nav>
 
-      {/* Controls: 12h/24h toggle, Background Picker, and Theme Cycler */}
+      {/* Controls: 12h/24h toggle, Background Picker, Desktop Download & Theme Cycler */}
       <div className="nav-controls">
         <button 
           className="control-btn"
@@ -91,6 +103,15 @@ export default function Navbar({
         >
           <ImageIcon size={15} />
           <span>Background</span>
+        </button>
+
+        <button 
+          className="control-btn download-app-btn"
+          onClick={onOpenInstallModal}
+          title="Download Timora as Desktop App"
+        >
+          <Download size={15} />
+          <span>Download App</span>
         </button>
 
         <button 
