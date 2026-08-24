@@ -5,7 +5,6 @@ import {
   RotateCcw, 
   SkipForward, 
   Settings, 
-  CheckCircle2, 
   TrendingUp, 
   History, 
   Trash2, 
@@ -31,11 +30,10 @@ export default function Pomodoro() {
   });
 
   const [showSettings, setShowSettings] = useState(false);
-  const [taskCompleted, setTaskCompleted] = useState(false);
 
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('pomodoro_stats');
-    return saved ? JSON.parse(saved) : { completedToday: 12, totalMinutes: 300, streak: 5 };
+    return saved ? JSON.parse(saved) : { completedToday: 0, totalMinutes: 0, streak: 0 };
   });
 
   const [records, setRecords] = useState(() => {
@@ -182,61 +180,81 @@ export default function Pomodoro() {
   const elapsedSecondsRemaining = (totalSeconds - secondsLeft) % 60;
   const elapsedFormatted = `${String(elapsedMinutes).padStart(2, '0')}:${String(elapsedSecondsRemaining).padStart(2, '0')}`;
 
-  const radius = 64;
+  const radius = 96;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (secondsLeft / totalSeconds) * circumference;
 
   return (
     <section className="glass-card pomodoro-card">
-      {/* Segmented Mode Selector from Template */}
+      {/* Mode Selector Tabs */}
       <div className="pomo-segmented-tabs">
         <button
           className={`pomo-segment-btn ${mode === 'pomodoro' ? 'active' : ''}`}
           onClick={() => switchMode('pomodoro')}
         >
-          Pomodoro
+          Pomodoro ({durations.pomodoro}m)
         </button>
         <button
           className={`pomo-segment-btn ${mode === 'shortBreak' ? 'active' : ''}`}
           onClick={() => switchMode('shortBreak')}
         >
-          Short Break
+          Short Break ({durations.shortBreak}m)
         </button>
         <button
           className={`pomo-segment-btn ${mode === 'longBreak' ? 'active' : ''}`}
           onClick={() => switchMode('longBreak')}
         >
-          Long Break
+          Long Break ({durations.longBreak}m)
         </button>
       </div>
 
-      {/* Stepper Controls: - 25:00 + */}
-      <div className="stepper-row">
+      {/* Circular Timer Centerpiece */}
+      <div className="timer-circle-wrap">
+        <svg className="timer-svg" viewBox="0 0 220 220">
+          <circle className="timer-circle-bg" cx="110" cy="110" r={radius} />
+          <circle
+            className="timer-circle-progress"
+            cx="110"
+            cy="110"
+            r={radius}
+            style={{
+              strokeDasharray: circumference,
+              strokeDashoffset: strokeDashoffset,
+            }}
+          />
+        </svg>
+        <div className="timer-center-content">
+          <div className="timer-digits">{formattedTime}</div>
+          <div className="timer-mode-label">
+            {isRunning 
+              ? (mode === 'pomodoro' ? 'Focusing' : 'Resting') 
+              : 'Paused'}
+          </div>
+        </div>
+      </div>
+
+      {/* Stepper Controls: - 1m / + 1m */}
+      <div className="stepper-adjust-row">
         <button 
           className="stepper-btn" 
           onClick={() => handleAdjustMinutes(-1)} 
-          title="Decrease 1 min"
+          title="Decrease duration by 1 minute"
         >
-          &minus;
+          &minus; 1 min
         </button>
-
-        <div className="stepper-time">
-          {formattedTime}
-        </div>
-
         <button 
           className="stepper-btn" 
           onClick={() => handleAdjustMinutes(1)} 
-          title="Increase 1 min"
+          title="Increase duration by 1 minute"
         >
-          +
+          + 1 min
         </button>
       </div>
 
-      {/* Linear Progress Bar (Template Spec: Focus Time 15:00 / 25:00) */}
+      {/* Linear Progress Bar */}
       <div className="focus-linear-progress">
         <div className="focus-linear-header">
-          <span>{mode === 'pomodoro' ? 'Focus Time' : 'Break Time'}</span>
+          <span>{mode === 'pomodoro' ? 'Focus Progress' : 'Break Progress'}</span>
           <span>{elapsedFormatted} / {durations[mode]}:00</span>
         </div>
         <div className="focus-linear-track">
@@ -247,58 +265,12 @@ export default function Pomodoro() {
         </div>
       </div>
 
-      {/* Task / Break Item Card (Template Spec: "Take a short break - 5 min") */}
-      <div className="task-item-card">
-        <label className="task-left">
-          <input
-            type="checkbox"
-            className="task-checkbox"
-            checked={taskCompleted}
-            onChange={(e) => setTaskCompleted(e.target.checked)}
-          />
-          <span style={{ textDecoration: taskCompleted ? 'line-through' : 'none' }}>
-            {mode === 'pomodoro' ? 'Deep Work Session' : 'Take a short break'}
-          </span>
-        </label>
-        <span className="task-time-badge">{durations[mode]} min</span>
-      </div>
-
-      {/* Circular Widget Mini Card */}
-      <div className="circular-timer-box">
-        <div className="circle-widget">
-          <svg className="circle-svg" viewBox="0 0 160 160">
-            <circle className="circle-bg" cx="80" cy="80" r={radius} />
-            <circle
-              className="circle-fill"
-              cx="80"
-              cy="80"
-              r={radius}
-              style={{
-                strokeDasharray: circumference,
-                strokeDashoffset: strokeDashoffset,
-              }}
-            />
-          </svg>
-          <div className="circle-center">
-            <span className="circle-label">Focus</span>
-            <span className="circle-time-sm">{formattedTime}</span>
-            <button 
-              className="circle-play-btn" 
-              onClick={togglePlay}
-              title={isRunning ? 'Pause' : 'Start'}
-            >
-              {isRunning ? <Pause size={18} /> : <Play size={18} />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Actions */}
+      {/* Action Buttons */}
       <div className="pomo-actions">
         <button 
           className="btn-icon-action" 
           onClick={handleReset}
-          title="Reset timer (R)"
+          title="Reset timer (Press R)"
         >
           <RotateCcw size={16} />
         </button>
@@ -306,15 +278,16 @@ export default function Pomodoro() {
         <button 
           className="primary-btn" 
           onClick={togglePlay}
+          style={{ minWidth: '120px' }}
         >
-          {isRunning ? <Pause size={17} /> : <Play size={17} />}
-          <span>{isRunning ? 'Pause' : 'Primary Button'}</span>
+          {isRunning ? <Pause size={18} /> : <Play size={18} />}
+          <span>{isRunning ? 'Pause' : 'Start'}</span>
         </button>
 
         <button 
           className="btn-icon-action" 
           onClick={handleSkip}
-          title="Skip to next (S)"
+          title="Skip to next session (Press S)"
         >
           <SkipForward size={16} />
         </button>
@@ -322,7 +295,7 @@ export default function Pomodoro() {
         <button 
           className={`btn-icon-action ${isAutoLoop ? 'active' : ''}`}
           onClick={() => setIsAutoLoop(!isAutoLoop)}
-          title={isAutoLoop ? 'Auto Loop: ON' : 'Auto Loop: OFF'}
+          title={isAutoLoop ? 'Auto Loop: ON (Continuous)' : 'Auto Loop: OFF'}
         >
           <Repeat size={16} />
         </button>
@@ -330,7 +303,7 @@ export default function Pomodoro() {
         <button 
           className="btn-icon-action" 
           onClick={handleRecordCurrentInterval}
-          title="Record current interval"
+          title="Bookmark interval/lap"
         >
           <BookmarkPlus size={16} />
         </button>
@@ -338,15 +311,15 @@ export default function Pomodoro() {
         <button 
           className="btn-icon-action" 
           onClick={() => setShowSettings(!showSettings)}
-          title="Settings"
+          title="Custom Settings"
         >
           <Settings size={16} />
         </button>
       </div>
 
-      {/* Duration Customization Drawer */}
+      {/* Settings Drawer */}
       {showSettings && (
-        <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-card-subtle)', borderRadius: 'var(--radius-md)' }}>
+        <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-card-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
           <h4 style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Customize Durations (Minutes)</h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
             <div>
@@ -357,7 +330,7 @@ export default function Pomodoro() {
                 max="90"
                 value={durations.pomodoro}
                 onChange={(e) => setDurations({ ...durations, pomodoro: Math.max(1, parseInt(e.target.value) || 1) })}
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)' }}
               />
             </div>
             <div>
@@ -368,7 +341,7 @@ export default function Pomodoro() {
                 max="30"
                 value={durations.shortBreak}
                 onChange={(e) => setDurations({ ...durations, shortBreak: Math.max(1, parseInt(e.target.value) || 1) })}
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)' }}
               />
             </div>
             <div>
@@ -379,26 +352,26 @@ export default function Pomodoro() {
                 max="60"
                 value={durations.longBreak}
                 onChange={(e) => setDurations({ ...durations, longBreak: Math.max(1, parseInt(e.target.value) || 1) })}
-                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)' }}
               />
             </div>
           </div>
         </div>
       )}
 
-      {/* Stat Card & Quote Card (From Design Template) */}
+      {/* Focus Stats & Quote Widget */}
       <div className="stats-and-quote-row">
         <div className="stat-card-widget">
           <div className="stat-card-title">Focus Sessions</div>
           <div className="stat-card-number">{stats.completedToday}</div>
           <div className="stat-trend-pill">
             <TrendingUp size={12} />
-            <span>&uarr; 20%</span>
+            <span>&uarr; 20% today</span>
           </div>
         </div>
 
         <div className="quote-card-widget">
-          <Quote size={14} color="var(--primary)" style={{ marginBottom: '0.2rem' }} />
+          <Quote size={13} color="var(--primary)" style={{ marginBottom: '0.15rem' }} />
           <p>"The key is not to prioritize what's on your schedule, but to schedule your priorities."</p>
           <div className="quote-author">&mdash; Stephen Covey</div>
         </div>
@@ -408,7 +381,7 @@ export default function Pomodoro() {
       <div className="pomo-records-section">
         <div className="records-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <History size={16} color="var(--primary)" />
+            <History size={15} color="var(--primary)" />
             <h4>Session Records ({records.length})</h4>
           </div>
 
@@ -417,34 +390,34 @@ export default function Pomodoro() {
               className="clear-records-btn"
               onClick={handleClearAllRecords}
             >
-              <Trash2 size={13} />
+              <Trash2 size={12} />
               <span>Clear</span>
             </button>
           )}
         </div>
 
         {records.length === 0 ? (
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textAlign: 'center', padding: '1rem' }}>
-            No sessions recorded yet.
+          <div style={{ fontSize: '0.775rem', color: 'var(--text-dim)', textAlign: 'center', padding: '0.85rem' }}>
+            No sessions recorded yet. Start timer or bookmark lap.
           </div>
         ) : (
           <div className="records-list">
             {records.map((rec, index) => (
               <div key={rec.id} className="record-item">
                 <div className="record-left">
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.725rem', color: 'var(--text-dim)' }}>
                     #{records.length - index}
                   </span>
                   <span className="record-badge">{rec.label}</span>
-                  <span style={{ fontWeight: '600' }}>{rec.duration} min</span>
+                  <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{rec.duration} min</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '0.725rem', color: 'var(--text-dim)' }}>{rec.timeString}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{rec.timeString}</span>
                   <button 
                     className="delete-record-btn" 
                     onClick={() => handleDeleteRecord(rec.id)}
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={12} />
                   </button>
                 </div>
               </div>
