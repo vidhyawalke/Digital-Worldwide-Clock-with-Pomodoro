@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Sun, Moon, Plus, Trash2, Globe2, Check, Loader2 } from 'lucide-react';
 import { searchGlobalCitiesAPI } from '../services/citiesApi';
-import { WORLD_CITIES_DB } from '../data/cities';
 
 const INITIAL_CITIES = [
   { id: '1', name: 'New York', country: 'United States, NY', timezone: 'America/New_York' },
@@ -78,16 +77,7 @@ export default function WorldClock({ is24Hour }) {
     const timer = setTimeout(async () => {
       setIsSearchLoading(true);
       const apiResults = await searchGlobalCitiesAPI(searchQuery);
-      if (apiResults && apiResults.length > 0) {
-        setSearchSuggestions(apiResults);
-      } else {
-        // Local fallback
-        const localMatches = WORLD_CITIES_DB.filter(c => 
-          c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          c.country.toLowerCase().includes(searchQuery.toLowerCase())
-        ).slice(0, 8);
-        setSearchSuggestions(localMatches);
-      }
+      setSearchSuggestions(apiResults || []);
       setIsSearchLoading(false);
     }, 250);
 
@@ -104,15 +94,7 @@ export default function WorldClock({ is24Hour }) {
     const timer = setTimeout(async () => {
       setIsFormLoading(true);
       const apiResults = await searchGlobalCitiesAPI(newCityName);
-      if (apiResults && apiResults.length > 0) {
-        setFormSuggestions(apiResults);
-      } else {
-        const localMatches = WORLD_CITIES_DB.filter(c => 
-          c.name.toLowerCase().includes(newCityName.toLowerCase()) ||
-          c.country.toLowerCase().includes(newCityName.toLowerCase())
-        ).slice(0, 8);
-        setFormSuggestions(localMatches);
-      }
+      setFormSuggestions(apiResults || []);
       setIsFormLoading(false);
     }, 250);
 
@@ -286,14 +268,14 @@ export default function WorldClock({ is24Hour }) {
       {showAddCity && (
         <form onSubmit={handleAddCity} className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem', position: 'relative' }}>
           <h3 style={{ fontSize: '1rem', marginBottom: '1rem', fontWeight: '600', color: 'var(--text-main)' }}>
-            Add New Location (Search Live Global Database)
+            Add New Location (Live API Search)
           </h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
             {/* City Name with Real-Time Database Search */}
             <div style={{ position: 'relative' }} ref={formContainerRef}>
               <label style={{ fontSize: '0.775rem', fontWeight: '500', color: 'var(--text-muted)', display: 'block', marginBottom: '0.35rem' }}>
-                City Name (Search worldwide)
+                City Name (Search live API)
               </label>
               <div style={{ position: 'relative' }}>
                 <input
