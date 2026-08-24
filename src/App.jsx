@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import DigitalClock from './components/DigitalClock';
 import WorldClock from './components/WorldClock';
 import Pomodoro from './components/Pomodoro';
+import WeatherWidget from './components/WeatherWidget';
 import YouTubePlayer from './components/YouTubePlayer';
 import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
@@ -162,6 +163,7 @@ export default function App() {
             <div className="dashboard-grid">
               <div>
                 <WorldClock is24Hour={is24Hour} />
+                <WeatherWidget />
               </div>
               <div>
                 <Pomodoro />
