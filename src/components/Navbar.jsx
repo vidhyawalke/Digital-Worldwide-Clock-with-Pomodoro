@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Timer, LayoutDashboard, Palette, Hourglass } from 'lucide-react';
+import { Clock, Timer, LayoutDashboard, Palette, Hourglass, Image as ImageIcon } from 'lucide-react';
 
 /**
  * Navbar Component
@@ -14,7 +14,8 @@ export default function Navbar({
   is24Hour, 
   setIs24Hour, 
   theme, 
-  setTheme 
+  setTheme,
+  onOpenBackgroundPicker
 }) {
   const themes = [
     { id: 'default', label: 'Default' },
@@ -72,7 +73,7 @@ export default function Navbar({
         </button>
       </nav>
 
-      {/* Controls: 12h/24h toggle and Theme Cycler */}
+      {/* Controls: 12h/24h toggle, Background Picker, and Theme Cycler */}
       <div className="nav-controls">
         <button 
           className="control-btn"
@@ -85,8 +86,17 @@ export default function Navbar({
 
         <button 
           className="control-btn"
+          onClick={onOpenBackgroundPicker}
+          title="Change background wallpaper"
+        >
+          <ImageIcon size={15} />
+          <span>Background</span>
+        </button>
+
+        <button 
+          className="control-btn"
           onClick={cycleTheme}
-          title="Change theme color"
+          title="Change accent theme"
         >
           <Palette size={15} />
           <span style={{ textTransform: 'capitalize' }}>{theme}</span>
