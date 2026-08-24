@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Calendar, Zap } from 'lucide-react';
+import { Globe, Calendar, Clock } from 'lucide-react';
 
 /**
  * DigitalClock Component
@@ -11,21 +11,16 @@ import { Globe, Calendar, Zap } from 'lucide-react';
  *    when the component unmounts to prevent memory leaks.
  */
 export default function DigitalClock({ is24Hour }) {
-  // 1. Declare state for current time
   const [time, setTime] = useState(new Date());
 
-  // 2. Set up interval with useEffect
   useEffect(() => {
-    // This runs once when component mounts
     const timerId = setInterval(() => {
       setTime(new Date());
     }, 1000);
 
-    // 3. Cleanup function when component unmounts
     return () => clearInterval(timerId);
-  }, []); // Empty dependency array means run once on mount
+  }, []);
 
-  // Helper functions for formatting time strings
   const getFormattedTime = () => {
     let hours = time.getHours();
     const minutes = String(time.getMinutes()).padStart(2, '0');
@@ -35,7 +30,7 @@ export default function DigitalClock({ is24Hour }) {
     if (!is24Hour) {
       period = hours >= 12 ? 'PM' : 'AM';
       hours = hours % 12;
-      hours = hours ? hours : 12; // 0 becomes 12
+      hours = hours ? hours : 12;
     }
 
     const formattedHours = String(hours).padStart(2, '0');
@@ -49,7 +44,6 @@ export default function DigitalClock({ is24Hour }) {
 
   const { hoursStr, secondsStr, periodStr } = getFormattedTime();
 
-  // Date formatting: e.g. "Monday, August 24, 2026"
   const dateStr = time.toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
@@ -57,10 +51,7 @@ export default function DigitalClock({ is24Hour }) {
     day: 'numeric',
   });
 
-  // Timezone string
   const timezoneStr = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  
-  // Progress bar calculation for current second in a minute (0-60)
   const secondsProgress = (time.getSeconds() / 60) * 100;
 
   return (
@@ -69,10 +60,10 @@ export default function DigitalClock({ is24Hour }) {
         {/* Live Status Badge */}
         <div className="clock-badge">
           <span className="live-dot"></span>
-          <span>Live Local Time</span>
+          <span>Local Time</span>
         </div>
 
-        {/* Big Glow Digital Time Display */}
+        {/* Clean, Crisp Digital Time Readout */}
         <div className="time-display">
           <span>{hoursStr}</span>
           <span className="time-seconds">:{secondsStr}</span>
@@ -84,7 +75,7 @@ export default function DigitalClock({ is24Hour }) {
           {dateStr}
         </div>
 
-        {/* Animated Seconds Linear Progress */}
+        {/* Subtle Seconds Linear Progress */}
         <div className="seconds-bar-container" title={`${time.getSeconds()} seconds`}>
           <div 
             className="seconds-bar-fill"
@@ -95,16 +86,16 @@ export default function DigitalClock({ is24Hour }) {
         {/* Clock Metadata Chips */}
         <div className="clock-meta-tags">
           <div className="meta-chip">
-            <Globe size={14} />
+            <Globe size={14} color="var(--primary)" />
             <span>{timezoneStr}</span>
           </div>
           <div className="meta-chip">
-            <Calendar size={14} />
-            <span>Day {Math.ceil((time - new Date(time.getFullYear(), 0, 1)) / 86400000)} of Year</span>
+            <Calendar size={14} color="var(--primary)" />
+            <span>Day {Math.ceil((time - new Date(time.getFullYear(), 0, 1)) / 86400000)} of {time.getFullYear()}</span>
           </div>
           <div className="meta-chip">
-            <Zap size={14} />
-            <span>{is24Hour ? '24-Hour Format' : '12-Hour Format'}</span>
+            <Clock size={14} color="var(--primary)" />
+            <span>{is24Hour ? '24h Mode' : '12h Mode'}</span>
           </div>
         </div>
       </div>

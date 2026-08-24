@@ -10,7 +10,8 @@ import {
   History, 
   Trash2, 
   BookmarkPlus, 
-  Clock 
+  Clock,
+  Repeat
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
@@ -18,10 +19,10 @@ import { soundFx } from '../utils/audio';
  * Pomodoro Component
  * 
  * Beginner React Concepts:
- * 1. Managing multiple related states (secondsLeft, isRunning, mode, stats, records).
- * 2. Array state manipulation: Adding new items (`[newRecord, ...prev]`) and filtering (`prev.filter(...)`).
+ * 1. Managing multiple related states (secondsLeft, isRunning, mode, isAutoLoop, stats, records).
+ * 2. Auto-Loop Continuous Timer: Automatically transitions between Focus and Breaks without stopping.
  * 3. SVG Stroke Dasharray math for smooth circular countdown animation.
- * 4. Persisting session records to browser `localStorage`.
+ * 4. Persisting session records and auto-loop preferences to browser `localStorage`.
  */
 
 export default function Pomodoro() {
@@ -39,6 +40,12 @@ export default function Pomodoro() {
   
   // Timer running status
   const [isRunning, setIsRunning] = useState(false);
+
+  // Auto Loop Continuous Mode: keeps playing and looping until explicitly paused
+  const [isAutoLoop, setIsAutoLoop] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_autoloop');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   
   // Settings toggle
   const [showSettings, setShowSettings] = useState(false);
@@ -66,7 +73,7 @@ export default function Pomodoro() {
     }
   }, [mode, durations]);
 
-  // Persist durations, stats, and records
+  // Persist settings, stats, and loop mode
   useEffect(() => {
     localStorage.setItem('pomodoro_durations', JSON.stringify(durations));
   }, [durations]);
@@ -78,6 +85,10 @@ export default function Pomodoro() {
   useEffect(() => {
     localStorage.setItem('pomodoro_records', JSON.stringify(records));
   }, [records]);
+
+  useEffect(() => {
+    localStorage.setItem('pomodoro_autoloop', JSON.stringify(isAutoLoop));
+  }, [isAutoLoop]);
 
   // Helper to add a session record to the list
   const addRecord = (type, durationMins, label = 'Completed') => {
@@ -92,7 +103,7 @@ export default function Pomodoro() {
     setRecords((prev) => [newRecord, ...prev]);
   };
 
-  // Timer interval countdown
+  // Timer interval countdown & Auto-Loop logic
   useEffect(() => {
     let interval = null;
 
@@ -101,12 +112,11 @@ export default function Pomodoro() {
         setSecondsLeft((prev) => prev - 1);
       }, 1000);
     } else if (isRunning && secondsLeft === 0) {
-      // Timer finished!
+      // Current session reached zero!
       soundFx.playChime('complete');
-      setIsRunning(false);
 
       if (mode === 'pomodoro') {
-        // Increment completed sessions and add record
+        // Log completed Pomodoro session
         setStats((prev) => ({
           completedToday: prev.completedToday + 1,
           totalMinutes: prev.totalMinutes + durations.pomodoro,
@@ -114,18 +124,30 @@ export default function Pomodoro() {
         }));
         addRecord('pomodoro', durations.pomodoro, 'Focus Session');
 
-        // Switch to break
+        // Determine next break mode
         const nextBreak = (stats.completedToday + 1) % 4 === 0 ? 'longBreak' : 'shortBreak';
         setMode(nextBreak);
+        setSecondsLeft(durations[nextBreak] * 60);
+
+        // If Auto Loop is ON, continue running without pausing!
+        if (!isAutoLoop) {
+          setIsRunning(false);
+        }
       } else {
-        // Break finished, add record and back to pomodoro
+        // Break finished
         addRecord(mode, durations[mode], mode === 'shortBreak' ? 'Short Break' : 'Long Break');
         setMode('pomodoro');
+        setSecondsLeft(durations.pomodoro * 60);
+
+        // If Auto Loop is ON, continue running focus session!
+        if (!isAutoLoop) {
+          setIsRunning(false);
+        }
       }
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, secondsLeft, mode, durations, stats.completedToday]);
+  }, [isRunning, secondsLeft, mode, durations, isAutoLoop, stats.completedToday]);
 
   // Play / Pause Toggle
   const togglePlay = () => {
@@ -144,11 +166,13 @@ export default function Pomodoro() {
 
   // Skip to next mode
   const handleSkip = () => {
-    setIsRunning(false);
     if (mode === 'pomodoro') {
-      setMode('shortBreak');
+      const nextBreak = (stats.completedToday + 1) % 4 === 0 ? 'longBreak' : 'shortBreak';
+      setMode(nextBreak);
+      setSecondsLeft(durations[nextBreak] * 60);
     } else {
       setMode('pomodoro');
+      setSecondsLeft(durations.pomodoro * 60);
     }
   };
 
@@ -183,14 +207,14 @@ export default function Pomodoro() {
 
   // Circular progress calculation
   const totalSeconds = durations[mode] * 60;
-  const radius = 105;
+  const radius = 100;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (secondsLeft / totalSeconds) * circumference;
 
   return (
     <section className="glass-card pomodoro-card">
       {/* Mode Selector Tabs */}
-      <div className={`pomo-modes ${mode === 'shortBreak' ? 'break-short' : mode === 'longBreak' ? 'break-long' : ''}`}>
+      <div className="pomo-modes">
         <button
           className={`mode-btn ${mode === 'pomodoro' ? 'active' : ''}`}
           onClick={() => switchMode('pomodoro')}
@@ -211,7 +235,7 @@ export default function Pomodoro() {
         </button>
       </div>
 
-      {/* Circular Animated Timer */}
+      {/* Clean Circular Timer with Timora Coral Rose Accent */}
       <div className="timer-circle-container">
         <svg className="timer-svg" viewBox="0 0 240 240">
           <circle
@@ -228,7 +252,6 @@ export default function Pomodoro() {
             style={{
               strokeDasharray: circumference,
               strokeDashoffset: strokeDashoffset,
-              stroke: mode === 'pomodoro' ? 'var(--accent-cyan)' : mode === 'shortBreak' ? 'var(--accent-emerald)' : 'var(--accent-purple)'
             }}
           />
         </svg>
@@ -236,57 +259,68 @@ export default function Pomodoro() {
         <div className="timer-inner">
           <div className="pomo-time-text">{formattedTime}</div>
           <div className="pomo-status-label">
-            {isRunning ? (mode === 'pomodoro' ? 'Focus Time' : 'Relax & Rest') : 'Paused'}
+            {isRunning 
+              ? (mode === 'pomodoro' ? 'Focusing' : 'Resting') 
+              : 'Paused'}
           </div>
         </div>
       </div>
 
-      {/* Control Action Buttons */}
+      {/* Normal, Decent Control Action Buttons */}
       <div className="pomo-actions">
         <button 
           className="btn-icon-action" 
           onClick={handleReset}
-          title="Reset timer"
+          title="Reset timer (Press R)"
         >
-          <RotateCcw size={18} />
+          <RotateCcw size={17} />
         </button>
 
         <button 
           className="btn-primary-action" 
           onClick={togglePlay}
         >
-          {isRunning ? <Pause size={20} /> : <Play size={20} />}
-          <span>{isRunning ? 'Pause' : 'Start Focus'}</span>
+          {isRunning ? <Pause size={18} /> : <Play size={18} />}
+          <span>{isRunning ? 'Pause' : 'Start'}</span>
         </button>
 
         <button 
           className="btn-icon-action" 
           onClick={handleSkip}
-          title="Skip session"
+          title="Skip to next session (Press S)"
         >
-          <SkipForward size={18} />
+          <SkipForward size={17} />
+        </button>
+
+        {/* Auto Loop Continuous Mode Button */}
+        <button 
+          className={`btn-icon-action ${isAutoLoop ? 'active' : ''}`}
+          onClick={() => setIsAutoLoop(!isAutoLoop)}
+          title={isAutoLoop ? 'Auto Loop: ON (Plays continuously until paused)' : 'Auto Loop: OFF'}
+        >
+          <Repeat size={17} />
         </button>
 
         <button 
           className="btn-icon-action" 
           onClick={handleRecordCurrentInterval}
-          title="Record current lap/session"
+          title="Record current interval/lap"
         >
-          <BookmarkPlus size={18} />
+          <BookmarkPlus size={17} />
         </button>
 
         <button 
           className="btn-icon-action" 
           onClick={() => setShowSettings(!showSettings)}
-          title="Configure custom durations"
+          title="Custom Durations"
         >
-          <Settings size={18} />
+          <Settings size={17} />
         </button>
       </div>
 
       {/* Custom Duration Settings */}
       {showSettings && (
-        <div className="settings-drawer" style={{ width: '100%', borderTop: '1px solid var(--card-border)' }}>
+        <div className="settings-drawer" style={{ width: '100%', borderTop: '1px solid var(--border-color)' }}>
           <h4 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Customize Durations (Minutes)</h4>
           <div className="settings-grid">
             <div className="setting-field">
@@ -327,7 +361,7 @@ export default function Pomodoro() {
       <div className="pomo-stats-row">
         <div className="stat-item">
           <div className="stat-val" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <CheckCircle2 size={16} color="var(--accent-cyan)" />
+            <CheckCircle2 size={16} />
             <span>{stats.completedToday}</span>
           </div>
           <span className="stat-label">Sessions Done</span>
@@ -335,11 +369,11 @@ export default function Pomodoro() {
 
         <div className="stat-item">
           <div className="stat-val">{stats.totalMinutes}m</div>
-          <span className="stat-label">Focus Time</span>
+          <span className="stat-label">Total Focus</span>
         </div>
 
         <div className="stat-item">
-          <div className="stat-val" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--accent-amber)' }}>
+          <div className="stat-val" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <Flame size={16} />
             <span>{stats.streak}</span>
           </div>
@@ -351,7 +385,7 @@ export default function Pomodoro() {
       <div className="pomo-records-section">
         <div className="records-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <History size={16} color="var(--accent-cyan)" />
+            <History size={16} color="var(--primary)" />
             <h4>Session Records ({records.length})</h4>
           </div>
 
@@ -369,8 +403,8 @@ export default function Pomodoro() {
 
         {records.length === 0 ? (
           <div className="empty-records-msg">
-            <Clock size={18} style={{ opacity: 0.5, marginBottom: '0.25rem' }} />
-            <p>No records logged yet. Complete a session or tap the bookmark button to record.</p>
+            <Clock size={16} style={{ opacity: 0.6, marginBottom: '0.25rem' }} />
+            <p>No records logged yet. Complete a session or tap bookmark.</p>
           </div>
         ) : (
           <div className="records-list">

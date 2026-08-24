@@ -11,7 +11,6 @@ import { Search, Sun, Moon, Plus, Trash2, Globe2 } from 'lucide-react';
  * 4. State Immutability: Adding and removing items without mutating original arrays.
  */
 
-// Default worldwide cities list
 const INITIAL_CITIES = [
   { id: '1', name: 'New York', country: 'United States', timezone: 'America/New_York' },
   { id: '2', name: 'London', country: 'United Kingdom', timezone: 'Europe/London' },
@@ -29,7 +28,6 @@ const INITIAL_CITIES = [
 
 export default function WorldClock({ is24Hour }) {
   const [cities, setCities] = useState(() => {
-    // Load persisted cities from localStorage if available
     const saved = localStorage.getItem('world_clock_cities');
     return saved ? JSON.parse(saved) : INITIAL_CITIES;
   });
@@ -41,7 +39,6 @@ export default function WorldClock({ is24Hour }) {
   const [newCityCountry, setNewCityCountry] = useState('');
   const [newCityTz, setNewCityTz] = useState('UTC');
 
-  // Update clock every second
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -49,17 +46,14 @@ export default function WorldClock({ is24Hour }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Save to localStorage when cities change
   useEffect(() => {
     localStorage.setItem('world_clock_cities', JSON.stringify(cities));
   }, [cities]);
 
-  // Remove a city card
   const handleRemoveCity = (idToRemove) => {
     setCities(prev => prev.filter(city => city.id !== idToRemove));
   };
 
-  // Add a new custom city
   const handleAddCity = (e) => {
     e.preventDefault();
     if (!newCityName || !newCityTz) return;
@@ -77,12 +71,10 @@ export default function WorldClock({ is24Hour }) {
     setShowAddCity(false);
   };
 
-  // Reset to default list
   const handleResetDefaults = () => {
     setCities(INITIAL_CITIES);
   };
 
-  // Format time for specific timezone
   const getTimeInZone = (timezone) => {
     try {
       const options = {
@@ -98,7 +90,6 @@ export default function WorldClock({ is24Hour }) {
     }
   };
 
-  // Check if target timezone is currently daytime (between 6 AM and 6 PM)
   const isDaytimeInZone = (timezone) => {
     try {
       const options = {
@@ -113,7 +104,6 @@ export default function WorldClock({ is24Hour }) {
     }
   };
 
-  // Compute UTC offset string (e.g. "+5:30", "-4:00")
   const getUtcOffset = (timezone) => {
     try {
       const dateInZone = new Date(currentTime.toLocaleString('en-US', { timeZone: timezone }));
@@ -128,7 +118,6 @@ export default function WorldClock({ is24Hour }) {
     }
   };
 
-  // Filter cities by search term
   const filteredCities = cities.filter(city => 
     city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     city.country.toLowerCase().includes(searchQuery.toLowerCase())
@@ -139,7 +128,7 @@ export default function WorldClock({ is24Hour }) {
       {/* Header and Filter */}
       <div className="section-header">
         <h2 className="section-title">
-          <Globe2 size={22} color="#06b6d4" />
+          <Globe2 size={20} color="var(--primary)" />
           <span>Worldwide Timezones</span>
         </h2>
 
@@ -169,7 +158,7 @@ export default function WorldClock({ is24Hour }) {
       {/* Add City Modal/Form */}
       {showAddCity && (
         <form onSubmit={handleAddCity} className="glass-card settings-drawer" style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>Add New Location</h3>
+          <h3 style={{ fontSize: '0.95rem', marginBottom: '0.75rem' }}>Add New Location</h3>
           <div className="settings-grid">
             <div className="setting-field">
               <label>City Name</label>
@@ -194,7 +183,7 @@ export default function WorldClock({ is24Hour }) {
               <label>IANA Timezone</label>
               <input
                 type="text"
-                placeholder="e.g. Asia/Seoul or Europe/Rome"
+                placeholder="e.g. Asia/Seoul"
                 value={newCityTz}
                 onChange={(e) => setNewCityTz(e.target.value)}
                 required
@@ -212,7 +201,7 @@ export default function WorldClock({ is24Hour }) {
             <button 
               type="submit" 
               className="btn-primary-action" 
-              style={{ padding: '0.5rem 1.25rem', fontSize: '0.85rem' }}
+              style={{ padding: '0.45rem 1.25rem', fontSize: '0.85rem' }}
             >
               Save City
             </button>
@@ -237,12 +226,12 @@ export default function WorldClock({ is24Hour }) {
                 <div className="day-indicator">
                   {isDay ? (
                     <>
-                      <Sun size={12} color="#f59e0b" />
+                      <Sun size={12} color="var(--warning)" />
                       <span>Day</span>
                     </>
                   ) : (
                     <>
-                      <Moon size={12} color="#8b5cf6" />
+                      <Moon size={12} color="var(--primary)" />
                       <span>Night</span>
                     </>
                   )}
