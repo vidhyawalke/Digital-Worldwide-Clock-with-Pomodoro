@@ -27,6 +27,7 @@ export default function InstallModal({
   const [selectedPlatform, setSelectedPlatform] = useState('windows');
   const [isStandalone, setIsStandalone] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showBrowserTip, setShowBrowserTip] = useState(false);
 
   useEffect(() => {
     // Detect if already installed & running in standalone mode
@@ -50,7 +51,7 @@ export default function InstallModal({
 
   if (!isOpen) return null;
 
-  const handleNativeInstall = async () => {
+  const handleInstallClick = async () => {
     if (installPrompt) {
       installPrompt.prompt();
       const { outcome } = await installPrompt.userChoice;
@@ -58,6 +59,9 @@ export default function InstallModal({
         if (onInstallSuccess) onInstallSuccess();
         onClose();
       }
+    } else {
+      // Direct user attention to the browser install bar & open guide
+      setShowBrowserTip(true);
     }
   };
 
@@ -115,33 +119,57 @@ export default function InstallModal({
               </div>
             </div>
 
-            {/* Direct 1-Click Install Button if browser supports it */}
-            <div>
-              {installPrompt ? (
-                <button 
-                  className="primary-btn install-direct-btn"
-                  onClick={handleNativeInstall}
-                >
-                  <Download size={15} />
-                  <span>Install App Now</span>
-                </button>
-              ) : isStandalone ? (
+            {/* Direct 1-Click Install Button Action */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {isStandalone ? (
                 <div className="install-status-pill success">
-                  <CheckCircle2 size={14} />
+                  <CheckCircle2 size={15} />
                   <span>Installed & Running</span>
                 </div>
               ) : (
                 <button 
-                  className="secondary-btn"
-                  onClick={handleCopyLink}
-                  style={{ fontSize: '0.775rem', padding: '0.45rem 0.85rem' }}
+                  className="primary-btn install-direct-btn"
+                  onClick={handleInstallClick}
+                  style={{ padding: '0.55rem 1.25rem', fontSize: '0.85rem', fontWeight: '600' }}
                 >
-                  {copied ? <Check size={14} color="var(--success)" /> : <Share2 size={14} />}
-                  <span>{copied ? 'Link Copied!' : 'Share App Link'}</span>
+                  <Download size={16} />
+                  <span>Install App Now</span>
                 </button>
               )}
+
+              <button 
+                className="secondary-btn"
+                onClick={handleCopyLink}
+                style={{ fontSize: '0.8rem', padding: '0.5rem 0.85rem' }}
+                title="Copy direct app link to clipboard"
+              >
+                {copied ? <Check size={14} color="var(--success)" /> : <Share2 size={14} />}
+                <span>{copied ? 'Copied!' : 'Share Link'}</span>
+              </button>
             </div>
           </div>
+
+          {/* Browser Address Bar Quick Tip Banner if native prompt is pending */}
+          {showBrowserTip && !isStandalone && (
+            <div style={{ 
+              background: 'var(--primary-light)', 
+              border: '1px solid rgba(255, 77, 109, 0.3)', 
+              borderRadius: '8px', 
+              padding: '0.75rem 1rem', 
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              fontSize: '0.825rem',
+              color: 'var(--primary)',
+              fontWeight: '500'
+            }}>
+              <Sparkles size={18} style={{ flexShrink: 0 }} />
+              <div>
+                <strong>Direct Browser Install:</strong> Look at the <strong>top-right of your address bar</strong> and click the <strong>Install Timora icon (⊕ / 📥)</strong>, or open browser menu &rarr; <strong>"Install Timora"</strong>.
+              </div>
+            </div>
+          )}
 
           {/* Key Native App Features */}
           <div className="install-features-grid">
