@@ -73,7 +73,7 @@ export default function YouTubePlayer() {
   };
 
   const getEmbedUrl = () => {
-    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`;
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
   };
 
   return (

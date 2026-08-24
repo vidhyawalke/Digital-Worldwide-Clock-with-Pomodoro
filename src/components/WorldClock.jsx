@@ -2,22 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Sun, Moon, Plus, Trash2, Globe2, Check, Loader2 } from 'lucide-react';
 import { searchGlobalCitiesAPI } from '../services/citiesApi';
 
-const INITIAL_CITIES = [
-  { id: '1', name: 'New York', country: 'United States, NY', timezone: 'America/New_York' },
-  { id: '2', name: 'London', country: 'United Kingdom', timezone: 'Europe/London' },
-  { id: '3', name: 'Tokyo', country: 'Japan', timezone: 'Asia/Tokyo' },
-  { id: '4', name: 'Paris', country: 'France', timezone: 'Europe/Paris' },
-  { id: '5', name: 'Dubai', country: 'United Arab Emirates', timezone: 'Asia/Dubai' },
-  { id: '6', name: 'Singapore', country: 'Singapore', timezone: 'Asia/Singapore' },
-  { id: '7', name: 'Sydney', country: 'Australia, NSW', timezone: 'Australia/Sydney' },
-  { id: '8', name: 'Mapusa', country: 'Goa, India', timezone: 'Asia/Kolkata' },
-  { id: '9', name: 'Mumbai', country: 'Maharashtra, India', timezone: 'Asia/Kolkata' },
-];
+// No default cities — users add their own cities
+const INITIAL_CITIES = [];
 
 export default function WorldClock({ is24Hour }) {
   const [cities, setCities] = useState(() => {
     const saved = localStorage.getItem('world_clock_cities');
-    return saved ? JSON.parse(saved) : INITIAL_CITIES;
+    if (!saved) return INITIAL_CITIES;
+    const parsed = JSON.parse(saved);
+    // Clear old default cities (ids 1-9 were the hardcoded defaults)
+    const OLD_DEFAULT_IDS = ['1','2','3','4','5','6','7','8','9'];
+    const hasOldDefaults = parsed.every(c => OLD_DEFAULT_IDS.includes(c.id));
+    if (hasOldDefaults) {
+      localStorage.removeItem('world_clock_cities');
+      return INITIAL_CITIES;
+    }
+    return parsed;
   });
 
   const [currentTime, setCurrentTime] = useState(new Date());
