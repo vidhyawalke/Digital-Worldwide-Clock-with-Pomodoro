@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Timora UI/UX Design System (High-Contrast, Accessible, Modern)
+   Timora Clean Light Theme & Design System (Template Specification)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -8,21 +8,21 @@
   /* Timora Brand Coral Rose Palette */
   --primary: #FF4D6D;
   --primary-hover: #E63956;
-  --primary-light: rgba(255, 77, 109, 0.15);
-  --primary-gradient: linear-gradient(135deg, #FF4D6D 0%, #FF758F 100%);
+  --primary-light: #FFE6EC;
+  --primary-gradient: linear-gradient(135deg, #FF4D6D 0%, #FF8FA3 100%);
   
-  /* High-Contrast Accessible Dark Theme */
-  --bg-canvas: #0B0F19;
-  --bg-card: #151B2B;
-  --bg-card-subtle: #1C2438;
-  --bg-input: #1C2438;
+  /* Clean, Elegant Light Theme Canvas */
+  --bg-canvas: #F7F8FA;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #FAFAFC;
+  --bg-input: #FFFFFF;
   
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-hover: rgba(255, 77, 109, 0.4);
+  --border-color: #E2E8F0;
+  --border-hover: #FF4D6D;
   
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
-  --text-dim: #64748B;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --text-dim: #94A3B8;
   
   --success: #10B981;
   --warning: #F59E0B;
@@ -36,8 +36,8 @@
   --radius-sm: 8px;
   --radius-pill: 9999px;
   
-  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --shadow-btn: 0 4px 14px rgba(255, 77, 109, 0.35);
+  --shadow-card: 0 4px 20px rgba(15, 23, 42, 0.05);
+  --shadow-btn: 0 4px 14px rgba(255, 77, 109, 0.25);
   
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -73,7 +73,7 @@ body {
   padding: 0 1.25rem 2rem;
 }
 
-/* Card Surface */
+/* Crisp Clean Card Surface */
 .glass-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -83,7 +83,7 @@ body {
 }
 
 .glass-card:hover {
-  border-color: var(--border-hover);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 /* Navbar */
@@ -109,7 +109,7 @@ body {
   height: 40px;
   border-radius: var(--radius-md);
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(255, 77, 109, 0.2);
 }
 
 .logo-text h1 {
@@ -125,13 +125,12 @@ body {
   font-weight: 500;
 }
 
-/* Segmented Control for Navigation Tabs */
+/* Segmented Control for Navigation Tabs (Matching Timora Template) */
 .nav-tabs {
   display: flex;
-  background: var(--bg-card);
+  background: var(--primary-light);
   padding: 0.25rem;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--border-color);
   gap: 0.25rem;
 }
 
@@ -156,10 +155,10 @@ body {
 }
 
 .tab-btn.active {
-  background: var(--primary-gradient);
-  color: #FFFFFF;
+  background: var(--bg-card);
+  color: var(--primary);
   font-weight: 600;
-  box-shadow: var(--shadow-btn);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
 .nav-controls {
@@ -169,7 +168,7 @@ body {
   flex-wrap: wrap;
 }
 
-/* Accessible Action Buttons */
+/* Action Buttons (Matching Timora Template) */
 .primary-btn, .btn-primary-action {
   background: var(--primary-gradient);
   color: #FFFFFF;
@@ -189,8 +188,8 @@ body {
 }
 
 .primary-btn:hover, .btn-primary-action:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(255, 77, 109, 0.45);
 }
 
 .secondary-btn, .control-btn {
@@ -216,7 +215,7 @@ body {
 
 .download-app-btn {
   background: var(--primary-light);
-  border-color: rgba(255, 77, 109, 0.3);
+  border-color: transparent;
   color: var(--primary);
   font-weight: 600;
 }
@@ -277,8 +276,7 @@ body {
   font-size: 0.35em;
   margin-left: 0.65rem;
   padding: 0.2rem 0.5rem;
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-color);
+  background: var(--primary-light);
   border-radius: var(--radius-sm);
   color: var(--primary);
   font-weight: 600;
@@ -295,7 +293,7 @@ body {
   max-width: 320px;
   margin: 0 auto 0.85rem;
   height: 5px;
-  background: var(--bg-card-subtle);
+  background: var(--primary-light);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
@@ -357,16 +355,15 @@ body {
 
 .pomo-segmented-tabs {
   display: flex;
-  background: var(--bg-card-subtle);
+  background: var(--primary-light);
   padding: 0.25rem;
   border-radius: var(--radius-pill);
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--border-color);
+  margin-bottom: 1.25rem;
 }
 
 .pomo-segment-btn {
   flex: 1;
-  padding: 0.5rem 0.6rem;
+  padding: 0.45rem 0.6rem;
   border-radius: var(--radius-pill);
   border: none;
   background: transparent;
@@ -383,18 +380,18 @@ body {
 }
 
 .pomo-segment-btn.active {
-  background: var(--primary-gradient);
-  color: #FFFFFF;
+  background: var(--bg-card);
+  color: var(--primary);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(255, 77, 109, 0.35);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
 }
 
 /* Circular Timer Centerpiece */
 .timer-circle-wrap {
   position: relative;
-  width: 220px;
-  height: 220px;
-  margin: 0.5rem auto 1.5rem;
+  width: 170px;
+  height: 170px;
+  margin: 0.2rem auto 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -411,14 +408,14 @@ body {
 
 .timer-circle-bg {
   fill: none;
-  stroke: var(--bg-card-subtle);
-  stroke-width: 8;
+  stroke: var(--primary-light);
+  stroke-width: 7;
 }
 
 .timer-circle-progress {
   fill: none;
   stroke: var(--primary);
-  stroke-width: 8;
+  stroke-width: 7;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.8s ease;
 }
@@ -432,19 +429,19 @@ body {
 
 .timer-digits {
   font-family: var(--font-sans);
-  font-size: 3rem;
+  font-size: 2.35rem;
   font-weight: 700;
   color: var(--text-main);
   line-height: 1.1;
 }
 
 .timer-mode-label {
-  font-size: 0.775rem;
+  font-size: 0.75rem;
   color: var(--primary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
 }
 
 /* Stepper Controls (- 1m / + 1m) */
@@ -452,32 +449,32 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .stepper-btn {
-  padding: 0.35rem 0.85rem;
+  padding: 0.3rem 0.8rem;
   border-radius: var(--radius-pill);
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
+  background: var(--primary-light);
+  border: none;
+  color: var(--primary);
   font-family: var(--font-sans);
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
 }
 
 .stepper-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--primary);
+  color: #FFFFFF;
 }
 
 /* Linear Progress Bar */
 .focus-linear-progress {
   width: 100%;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.85rem;
 }
 
 .focus-linear-header {
@@ -486,13 +483,13 @@ body {
   font-size: 0.775rem;
   font-weight: 500;
   color: var(--text-muted);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 
 .focus-linear-track {
   width: 100%;
   height: 6px;
-  background: var(--bg-card-subtle);
+  background: var(--primary-light);
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
@@ -509,17 +506,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  margin-bottom: 1.5rem;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 
 .btn-icon-action {
-  background: var(--bg-card-subtle);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-muted);
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -543,15 +540,15 @@ body {
 .stats-and-quote-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
+  gap: 0.75rem;
   border-top: 1px solid var(--border-color);
-  padding-top: 1.25rem;
+  padding-top: 1rem;
 }
 
 .stat-card-widget {
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 0.85rem;
   border-radius: var(--radius-md);
 }
 
@@ -562,10 +559,10 @@ body {
 }
 
 .stat-card-number {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--text-main);
-  margin: 0.15rem 0;
+  margin: 0.1rem 0;
 }
 
 .stat-trend-pill {
@@ -575,7 +572,7 @@ body {
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--success);
-  background: rgba(16, 185, 129, 0.15);
+  background: #ECFDF5;
   padding: 0.15rem 0.45rem;
   border-radius: var(--radius-pill);
 }
@@ -583,9 +580,9 @@ body {
 .quote-card-widget {
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
-  padding: 0.85rem 1rem;
+  padding: 0.75rem 0.85rem;
   border-radius: var(--radius-md);
-  font-size: 0.75rem;
+  font-size: 0.725rem;
   color: var(--text-main);
   line-height: 1.35;
 }
@@ -600,20 +597,20 @@ body {
 /* Session Records */
 .pomo-records-section {
   width: 100%;
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   border-top: 1px solid var(--border-color);
-  padding-top: 1.15rem;
+  padding-top: 1rem;
 }
 
 .records-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.6rem;
 }
 
 .records-header h4 {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-main);
 }
@@ -640,8 +637,8 @@ body {
 .records-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  max-height: 150px;
+  gap: 0.35rem;
+  max-height: 140px;
   overflow-y: auto;
 }
 
@@ -649,7 +646,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.65rem;
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -693,11 +690,11 @@ body {
 .world-clock-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 0.85rem;
+  gap: 0.75rem;
 }
 
 .world-clock-card {
-  padding: 1.15rem;
+  padding: 1.1rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -713,20 +710,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .wc-city {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-main);
 }
 
 .wc-time {
-  font-size: 1.65rem;
+  font-size: 1.55rem;
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .wc-time span {
@@ -750,13 +747,13 @@ body {
 
 .search-input {
   width: 100%;
-  padding: 0.5rem 0.75rem 0.5rem 2.2rem;
+  padding: 0.45rem 0.75rem 0.45rem 2.2rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-pill);
   color: var(--text-main);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.825rem;
 }
 
 .search-input:focus {
@@ -781,7 +778,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
   max-height: 280px;
   overflow-y: auto;
   z-index: 100;
@@ -799,7 +796,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.65rem 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid #F1F5F9;
   cursor: pointer;
   transition: var(--transition);
   text-align: left;
@@ -862,21 +859,139 @@ body {
   font-weight: 600;
 }
 
-/* YouTube Section */
-.persistent-yt-section {
-  max-width: 800px;
-  margin: 2.25rem auto 0;
-  width: 100%;
+/* Weather Widget Component */
+.weather-widget-card {
+  padding: 1.15rem 1.25rem;
 }
 
+.weather-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.weather-title-wrap h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+
+.weather-location-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.weather-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.weather-unit-btn, .weather-refresh-btn, .weather-gps-btn {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.725rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.weather-unit-btn:hover, .weather-refresh-btn:hover, .weather-gps-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.weather-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.weather-current-temp {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.weather-condition-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.weather-high-low {
+  font-size: 0.775rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.weather-forecast-list {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.weather-forecast-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.forecast-day {
+  font-weight: 600;
+  color: var(--text-main);
+  min-width: 55px;
+}
+
+.forecast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.forecast-temps {
+  font-weight: 600;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 0.775rem;
+}
+
+.weather-footer-note {
+  font-size: 0.675rem;
+  color: var(--text-dim);
+  text-align: right;
+  margin-top: 0.6rem;
+}
+
+/* YouTube Section */
 .yt-player-card {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 .yt-input-group {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
 }
 
 .yt-input-wrapper {
@@ -886,13 +1001,13 @@ body {
 
 .yt-url-input {
   width: 100%;
-  padding: 0.55rem 0.75rem 0.55rem 2.2rem;
+  padding: 0.45rem 0.75rem 0.45rem 2.2rem;
   background: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-pill);
   color: var(--text-main);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: 0.825rem;
 }
 
 .yt-url-input:focus {
@@ -911,9 +1026,9 @@ body {
 .yt-presets-row {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
 }
 
 .yt-preset-chip {
@@ -921,7 +1036,7 @@ body {
   border: 1px solid var(--border-color);
   color: var(--text-muted);
   font-size: 0.725rem;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.65rem;
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: var(--transition);
@@ -942,7 +1057,7 @@ body {
 .yt-iframe-container {
   position: relative;
   width: 100%;
-  padding-bottom: 56.25%;
+  padding-bottom: 48%;
   height: 0;
   overflow: hidden;
   border-radius: var(--radius-md);
@@ -959,6 +1074,15 @@ body {
   border: 0;
 }
 
+.yt-minimized-banner {
+  padding: 0.65rem 0.85rem;
+  background: var(--primary-light);
+  border-radius: var(--radius-md);
+  font-size: 0.775rem;
+  color: var(--primary);
+  font-weight: 500;
+}
+
 /* Modals */
 .modal-backdrop {
   position: fixed;
@@ -966,7 +1090,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(15, 23, 42, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -983,7 +1107,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
   overflow: hidden;
 }
 
@@ -991,7 +1115,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
+  padding: 1.1rem 1.35rem;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -1003,142 +1127,17 @@ body {
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 1.35rem;
   overflow-y: auto;
 }
 
 /* Footer */
 .app-footer {
   margin-top: auto;
-  padding-top: 3rem;
+  padding-top: 2rem;
   text-align: center;
-  font-size: 0.825rem;
-  color: var(--text-dim);
-}
-
-/* Weather Widget Component (Matching TimeAndDate specification) */
-.weather-widget-card {
-  padding: 1.25rem 1.5rem;
-  margin-top: 1.25rem;
-}
-
-.weather-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.weather-title-wrap h3 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1.1;
-}
-
-.weather-location-sub {
-  font-size: 0.775rem;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-top: 0.25rem;
-}
-
-.weather-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.weather-unit-btn, .weather-refresh-btn, .weather-gps-btn {
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
-  padding: 0.3rem 0.55rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-}
-
-.weather-unit-btn:hover, .weather-refresh-btn:hover, .weather-gps-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.weather-main-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-}
-
-.weather-current-temp {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1;
-}
-
-.weather-condition-label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin-top: 0.25rem;
-}
-
-.weather-high-low {
   font-size: 0.8rem;
   color: var(--text-dim);
-  font-weight: 500;
-}
-
-.weather-forecast-list {
-  border-top: 1px solid var(--border-color);
-  padding-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.weather-forecast-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.85rem;
-}
-
-.forecast-day {
-  font-weight: 600;
-  color: var(--text-main);
-  min-width: 60px;
-}
-
-.forecast-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.forecast-temps {
-  font-weight: 600;
-  color: var(--text-main);
-  font-family: var(--font-mono);
-  font-size: 0.825rem;
-}
-
-.weather-footer-note {
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  text-align: right;
-  margin-top: 0.75rem;
 }
 
 .spin-anim {
