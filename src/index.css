@@ -1685,6 +1685,132 @@ body {
 }
 
 /* ==========================================================================
+   World Clock — Analog City Grid
+   ========================================================================== */
+
+.wc-analog-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: flex-start;
+}
+
+.wc-analog-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  cursor: default;
+  min-width: 130px;
+}
+
+.wc-analog-card:hover {
+  background: var(--bg-card-subtle);
+}
+
+.wc-analog-card:hover .wc-remove-btn {
+  opacity: 1;
+}
+
+/* Analog clock SVG styles */
+.wc-analog-svg .wc-face {
+  fill: var(--bg-card);
+  stroke: var(--border-color);
+  stroke-width: 2;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.08));
+}
+
+.wc-analog-svg .wc-tick-major {
+  stroke: var(--text-muted);
+  stroke-width: 2;
+}
+
+.wc-analog-svg .wc-tick-minor {
+  stroke: var(--border-color);
+  stroke-width: 1;
+}
+
+.wc-analog-svg .wc-num {
+  font-size: 9px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  fill: var(--text-muted);
+}
+
+.wc-analog-svg .wc-hand-hour {
+  stroke: var(--text-main);
+  stroke-width: 3.5;
+}
+
+.wc-analog-svg .wc-hand-minute {
+  stroke: var(--text-main);
+  stroke-width: 2;
+}
+
+.wc-analog-svg .wc-hand-second {
+  stroke: var(--primary);
+  stroke-width: 1.5;
+}
+
+.wc-analog-svg .wc-center-dot {
+  fill: var(--primary);
+}
+
+/* City info below clock */
+.wc-analog-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  text-align: center;
+}
+
+.wc-analog-city {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.wc-analog-time {
+  font-size: 0.77rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Remove button */
+.wc-remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  opacity: 0;
+  padding: 3px;
+  border-radius: 4px;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+}
+
+.wc-remove-btn:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+@media (max-width: 480px) {
+  .wc-analog-grid {
+    justify-content: center;
+    gap: 1rem;
+  }
+}
+
+/* ==========================================================================
    Mobile & Desktop Responsive Layout System
    ========================================================================== */
 
