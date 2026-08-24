@@ -12,7 +12,7 @@ This repository is maintained as a **private/proprietary project** and is **not 
 ### 🤝 Collaboration & Inquiries
 If you would like to collaborate or report an issue, please contact the author directly:
 - **Lead Developer & Owner**: Vidhya Walke ([@vidzz22](https://github.com/vidzz22) / [@vidhyawalke](https://github.com/vidhyawalke))
-- **GitHub Repository**: [Digital-Worldwide-Clock-with-Pomodoro](https://github.com/vidhyawalke/Digital-Worldwide-Clock-with-Pomodoro)
+- **GitHub Repository**: [Timora-Digital-Worldwide-Clock-with-Pomodoro](https://github.com/vidhyawalke/Timora-Digital-Worldwide-Clock-with-Pomodoro)
 
 ---
 

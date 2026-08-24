@@ -3,6 +3,8 @@
 > **Focus. Time. Anywhere.**  
 > A high-performance productivity dashboard combining a Live Digital Clock, Worldwide Geocoded Timezones, Pomodoro Focus Station, Live GPS Weather, and YouTube Study Ambient Music.
 
+🌐 **Live App**: [timora-digital-worldwide-clock-with.vercel.app](https://timora-digital-worldwide-clock-with.vercel.app/)
+
 ---
 
 ## 🔒 Security & Proprietary Notice (Not Open Source)
@@ -17,7 +19,8 @@
 ### 📬 Contact for Collaboration
 - **Owner / Lead Author**: Vidhya Walke
 - **GitHub**: [@vidzz22](https://github.com/vidzz22) / [@vidhyawalke](https://github.com/vidhyawalke)
-- **Repository**: [Digital-Worldwide-Clock-with-Pomodoro](https://github.com/vidhyawalke/Digital-Worldwide-Clock-with-Pomodoro)
+- **Repository**: [Timora-Digital-Worldwide-Clock-with-Pomodoro](https://github.com/vidhyawalke/Timora-Digital-Worldwide-Clock-with-Pomodoro)
+- **Live App**: [timora-digital-worldwide-clock-with.vercel.app](https://timora-digital-worldwide-clock-with.vercel.app/)
 
 ---
 
@@ -47,7 +50,7 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/vidhyawalke/Digital-Worldwide-Clock-with-Pomodoro.git
+git clone https://github.com/vidhyawalke/Timora-Digital-Worldwide-Clock-with-Pomodoro.git
 
 # Install dependencies
 npm install
