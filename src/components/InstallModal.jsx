@@ -1,19 +1,53 @@
-import { X, Download, Monitor, CheckCircle, Smartphone } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  X, 
+  Download, 
+  Monitor, 
+  Smartphone, 
+  CheckCircle2, 
+  Sparkles, 
+  Zap, 
+  Layers, 
+  BellRing, 
+  Share2, 
+  PlusSquare,
+  ArrowRight,
+  ExternalLink,
+  Laptop,
+  Check
+} from 'lucide-react';
 import timoraLogo from '../assets/timora-logo.jpg';
 
-/**
- * InstallModal Component
- * 
- * Beginner React Concepts:
- * 1. Handling PWA `beforeinstallprompt` event objects in React state.
- * 2. Providing native app install actions and platform-specific guides.
- */
 export default function InstallModal({
   isOpen,
   onClose,
   installPrompt,
   onInstallSuccess
 }) {
+  const [selectedPlatform, setSelectedPlatform] = useState('windows');
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    // Detect if already installed & running in standalone mode
+    const isRunningStandalone = 
+      window.matchMedia('(display-mode: standalone)').matches || 
+      window.navigator.standalone === true;
+    setIsStandalone(!!isRunningStandalone);
+
+    // Auto-detect user's OS
+    const ua = window.navigator.userAgent.toLowerCase();
+    if (/iphone|ipad|ipod/.test(ua)) {
+      setSelectedPlatform('ios');
+    } else if (/android/.test(ua)) {
+      setSelectedPlatform('android');
+    } else if (/macintosh|mac os x/.test(ua)) {
+      setSelectedPlatform('mac');
+    } else {
+      setSelectedPlatform('windows');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleNativeInstall = async () => {
@@ -27,72 +61,225 @@ export default function InstallModal({
     }
   };
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content glass-card install-modal-box" onClick={(e) => e.stopPropagation()}>
+      <div 
+        className="modal-content install-modal-container"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: '620px' }}
+      >
         {/* Header */}
-        <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Monitor size={20} color="var(--accent-cyan)" />
-            <h2>Download Desktop App</h2>
+        <div className="modal-header" style={{ padding: '1rem 1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <div style={{ background: 'var(--primary-light)', padding: '0.4rem', borderRadius: '8px', display: 'flex' }}>
+              <Download size={18} color="var(--primary)" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
+                Download Timora App
+              </h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Native desktop & mobile experience with zero installation overhead
+              </span>
+            </div>
           </div>
           <button className="modal-close-btn" onClick={onClose} title="Close">
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="modal-body" style={{ textAlign: 'center' }}>
-          <img 
-            src={timoraLogo} 
-            alt="Timora Brand" 
-            className="install-brand-img"
-          />
-          <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginTop: '0.75rem' }}>Timora</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-            Focus. Time. Anywhere.
-          </p>
-
-          {/* Quick Install Action (If browser supports native prompt) */}
-          {installPrompt ? (
-            <button 
-              className="btn-primary-action install-action-btn"
-              onClick={handleNativeInstall}
-            >
-              <Download size={18} />
-              <span>Install to Desktop / Taskbar</span>
-            </button>
-          ) : (
-            <div className="install-notice-badge">
-              <CheckCircle size={16} color="var(--accent-emerald)" />
-              <span>Quick Install Guide for Chrome, Edge & Safari</span>
-            </div>
-          )}
-
-          {/* Step-by-Step Instructions */}
-          <div className="install-steps-container">
-            <div className="install-step-card">
-              <div className="step-num">1</div>
-              <div className="step-text">
-                <strong>Chrome or Edge on PC/Mac</strong>
-                <p>Click the <strong>Install icon</strong> in your browser address bar (top right) or open menu &rarr; <strong>Install Timora</strong>.</p>
+        <div className="modal-body" style={{ padding: '1.25rem' }}>
+          {/* App Branding & 1-Click Install Card */}
+          <div className="install-hero-card">
+            <div className="install-hero-left">
+              <img 
+                src={timoraLogo} 
+                alt="Timora Logo" 
+                className="install-hero-logo"
+              />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <h4 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-main)' }}>Timora</h4>
+                  <span className="install-version-pill">v1.0 &bull; PWA</span>
+                </div>
+                <p style={{ fontSize: '0.775rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                  Focus. Time. Anywhere.
+                </p>
               </div>
             </div>
 
-            <div className="install-step-card">
-              <div className="step-num">2</div>
-              <div className="step-text">
-                <strong>macOS Dock / Safari</strong>
-                <p>Open <strong>File</strong> menu &rarr; <strong>Add to Dock</strong> to run Timora as a dedicated window.</p>
+            {/* Direct 1-Click Install Button if browser supports it */}
+            <div>
+              {installPrompt ? (
+                <button 
+                  className="primary-btn install-direct-btn"
+                  onClick={handleNativeInstall}
+                >
+                  <Download size={15} />
+                  <span>Install App Now</span>
+                </button>
+              ) : isStandalone ? (
+                <div className="install-status-pill success">
+                  <CheckCircle2 size={14} />
+                  <span>Installed & Running</span>
+                </div>
+              ) : (
+                <button 
+                  className="secondary-btn"
+                  onClick={handleCopyLink}
+                  style={{ fontSize: '0.775rem', padding: '0.45rem 0.85rem' }}
+                >
+                  {copied ? <Check size={14} color="var(--success)" /> : <Share2 size={14} />}
+                  <span>{copied ? 'Link Copied!' : 'Share App Link'}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Key Native App Features */}
+          <div className="install-features-grid">
+            <div className="install-feature-item">
+              <Zap size={15} color="var(--primary)" />
+              <div>
+                <strong>Instant Launch</strong>
+                <p>Loads in under 1s with offline cache</p>
               </div>
             </div>
-
-            <div className="install-step-card">
-              <div className="step-num">3</div>
-              <div className="step-text">
-                <strong>iPhone or Android</strong>
-                <p>Tap Share &rarr; <strong>Add to Home Screen</strong> to install Timora instantly on your phone.</p>
+            <div className="install-feature-item">
+              <Layers size={15} color="#0284C7" />
+              <div>
+                <strong>Distraction-Free</strong>
+                <p>Runs in clean window without browser tabs</p>
               </div>
+            </div>
+            <div className="install-feature-item">
+              <BellRing size={15} color="#059669" />
+              <div>
+                <strong>Taskbar & Dock</strong>
+                <p>Pins directly to desktop and home screen</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Platform Guide Tabs */}
+          <div style={{ marginTop: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-main)' }}>
+                Select Your Device Platform:
+              </span>
+            </div>
+
+            <div className="install-platform-tabs">
+              <button 
+                type="button"
+                className={`install-tab-btn ${selectedPlatform === 'windows' ? 'active' : ''}`}
+                onClick={() => setSelectedPlatform('windows')}
+              >
+                <Monitor size={14} />
+                <span>Windows / PC</span>
+              </button>
+              <button 
+                type="button"
+                className={`install-tab-btn ${selectedPlatform === 'mac' ? 'active' : ''}`}
+                onClick={() => setSelectedPlatform('mac')}
+              >
+                <Laptop size={14} />
+                <span>macOS</span>
+              </button>
+              <button 
+                type="button"
+                className={`install-tab-btn ${selectedPlatform === 'ios' ? 'active' : ''}`}
+                onClick={() => setSelectedPlatform('ios')}
+              >
+                <Smartphone size={14} />
+                <span>iPhone / iPad</span>
+              </button>
+              <button 
+                type="button"
+                className={`install-tab-btn ${selectedPlatform === 'android' ? 'active' : ''}`}
+                onClick={() => setSelectedPlatform('android')}
+              >
+                <Smartphone size={14} />
+                <span>Android</span>
+              </button>
+            </div>
+
+            {/* Platform Specific Instructions */}
+            <div className="install-guide-box">
+              {selectedPlatform === 'windows' && (
+                <div className="guide-steps-list">
+                  <div className="guide-step">
+                    <span className="step-badge">1</span>
+                    <p>In <strong>Chrome, Edge, or Brave</strong>, look at the right side of the address bar at the top.</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">2</span>
+                    <p>Click the <strong>Install Timora</strong> icon (or menu &rarr; <strong>"Install Timora"</strong> / <strong>"Apps &rarr; Install"</strong>).</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">3</span>
+                    <p>Click <strong>Install</strong> to add Timora to your Windows Start Menu and Taskbar.</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedPlatform === 'mac' && (
+                <div className="guide-steps-list">
+                  <div className="guide-step">
+                    <span className="step-badge">1</span>
+                    <p>In <strong>Safari</strong> (macOS Sonoma or later): Click <strong>File &rarr; Add to Dock</strong>.</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">2</span>
+                    <p>In <strong>Chrome or Edge</strong>: Click the <strong>Install icon</strong> in the top address bar.</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">3</span>
+                    <p>Timora will open as a standalone macOS app in your Dock and Launchpad.</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedPlatform === 'ios' && (
+                <div className="guide-steps-list">
+                  <div className="guide-step">
+                    <span className="step-badge">1</span>
+                    <p>Open this page in <strong>Safari</strong> on your iPhone or iPad.</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">2</span>
+                    <p>Tap the <strong>Share button</strong> <Share2 size={13} style={{ verticalAlign: 'middle', display: 'inline' }} /> at the bottom toolbar.</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">3</span>
+                    <p>Scroll down and tap <strong>"Add to Home Screen"</strong> <PlusSquare size={13} style={{ verticalAlign: 'middle', display: 'inline' }} />, then tap <strong>Add</strong>.</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedPlatform === 'android' && (
+                <div className="guide-steps-list">
+                  <div className="guide-step">
+                    <span className="step-badge">1</span>
+                    <p>Open this page in <strong>Chrome</strong> or <strong>Samsung Internet</strong> on Android.</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">2</span>
+                    <p>Tap the <strong>three dots menu (⋮)</strong> in the top right corner.</p>
+                  </div>
+                  <div className="guide-step">
+                    <span className="step-badge">3</span>
+                    <p>Select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong> to install immediately.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -100,3 +287,4 @@ export default function InstallModal({
     </div>
   );
 }
+

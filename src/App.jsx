@@ -8,8 +8,19 @@ import YouTubePlayer from './components/YouTubePlayer';
 import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
 import ShortcutsModal from './components/ShortcutsModal';
-import DailyReportModal from './components/DailyReportModal';
 import { WALLPAPER_CATEGORIES } from './data/wallpapers';
+
+// Helper to calculate if a background color is dark or light
+function isColorDark(hexColor) {
+  if (!hexColor || typeof hexColor !== 'string') return true;
+  const hex = hexColor.replace('#', '');
+  if (hex.length < 6) return true;
+  const r = parseInt(hex.substring(0, 2), 16) || 0;
+  const g = parseInt(hex.substring(2, 4), 16) || 0;
+  const b = parseInt(hex.substring(4, 6), 16) || 0;
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness < 140;
+}
 
 export default function App() {
   // 1. Current active view tab: 'dashboard' | 'clock' | 'pomodoro'
@@ -32,10 +43,9 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 4. Modals: Install, Shortcuts, and Daily Progress Report
+  // 4. Modals: Install & Shortcuts
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  const [isDailyReportOpen, setIsDailyReportOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
   // Catch PWA beforeinstallprompt event for desktop app download
@@ -66,8 +76,6 @@ export default function App() {
         setIsBgPickerOpen(prev => !prev);
       } else if (e.key.toLowerCase() === 'd') {
         setIsInstallModalOpen(prev => !prev);
-      } else if (e.key.toLowerCase() === 'p') {
-        setIsDailyReportOpen(prev => !prev);
       } else if (e.key === '?') {
         setIsShortcutsModalOpen(prev => !prev);
       } else if (e.key.toLowerCase() === 'f') {
@@ -123,7 +131,7 @@ export default function App() {
 
     if (currentWallpaper.url) {
       return {
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.3)), url(${currentWallpaper.url})`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.38)), url(${currentWallpaper.url})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -131,6 +139,17 @@ export default function App() {
     }
 
     return {};
+  };
+
+  const getThemeClass = () => {
+    if (!currentWallpaper) return 'theme-default';
+    if (currentWallpaper.isColor) {
+      return isColorDark(currentWallpaper.value) ? 'theme-solid-dark' : 'theme-solid-light';
+    }
+    if (currentWallpaper.url) {
+      return 'theme-image-wallpaper';
+    }
+    return 'theme-default';
   };
 
   const handleSelectWallpaper = (wallpaper) => {
@@ -143,7 +162,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-root-bg" style={getAppBackgroundStyle()}>
+    <div className={`app-root-bg ${getThemeClass()}`} style={getAppBackgroundStyle()}>
       <div className="app-wrapper">
         {/* Top Navigation Bar */}
         <Navbar
@@ -154,17 +173,16 @@ export default function App() {
           onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
           onOpenInstallModal={() => setIsInstallModalOpen(true)}
           onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
-          onOpenDailyReport={() => setIsDailyReportOpen(true)}
         />
 
         <main>
-          {/* Main Digital Clock Banner (Compact Header) */}
-          <div style={{ display: (currentTab === 'dashboard' || currentTab === 'clock') ? 'block' : 'none' }}>
+          {/* Main Digital Clock Banner (Only on Dashboard & World Clock tabs) */}
+          {currentTab !== 'pomodoro' && (
             <DigitalClock is24Hour={is24Hour} />
-          </div>
+          )}
 
-          {/* Tab 1: Combined High-Efficiency Dashboard (No Deep Scrolling) */}
-          <div style={{ display: currentTab === 'dashboard' ? 'block' : 'none' }}>
+          {/* Tab 1: Combined High-Efficiency Dashboard */}
+          {currentTab === 'dashboard' && (
             <div className="dashboard-grid">
               {/* Left Column: World Clock & Live Weather */}
               <div className="dashboard-col">
@@ -178,38 +196,37 @@ export default function App() {
                 <YouTubePlayer />
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Tab 2: World Clock Focus View */}
-          <div style={{ display: currentTab === 'clock' ? 'block' : 'none', maxWidth: '1000px', margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.25rem', alignItems: 'start' }}>
-              <WorldClock is24Hour={is24Hour} />
-              <div>
+          {/* Tab 2: Dedicated World Clock View */}
+          {currentTab === 'clock' && (
+            <div className="clock-view-layout">
+              <div className="world-clock-main-col">
+                <WorldClock is24Hour={is24Hour} />
+              </div>
+              <div className="world-clock-side-col">
                 <WeatherWidget />
-                <YouTubePlayer />
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Tab 3: Pomodoro Focus View */}
-          <div style={{ display: currentTab === 'pomodoro' ? 'block' : 'none', maxWidth: '800px', margin: '0 auto' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.25rem' }}>
-              <Pomodoro />
-              <YouTubePlayer />
+          {/* Tab 3: Dedicated Pure Pomodoro Focus Screen (Strictly Pomodoro) */}
+          {currentTab === 'pomodoro' && (
+            <div className="pomodoro-view-layout">
+              <div className="pomodoro-focus-container">
+                <Pomodoro />
+                <div style={{ marginTop: '1.25rem' }}>
+                  <YouTubePlayer />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </main>
 
         {/* Footer */}
         <footer className="app-footer">
           <p>Timora &bull; Focus. Time. Anywhere.</p>
         </footer>
-
-        {/* Daily Progress Report Modal (Print & Save as Image PNG) */}
-        <DailyReportModal
-          isOpen={isDailyReportOpen}
-          onClose={() => setIsDailyReportOpen(false)}
-        />
 
         {/* Google Chrome Style Wallpaper Customizer Modal */}
         <BackgroundPicker

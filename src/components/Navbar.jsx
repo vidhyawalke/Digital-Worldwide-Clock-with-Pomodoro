@@ -7,9 +7,7 @@ import {
   Image as ImageIcon,
   Download,
   Maximize,
-  Minimize,
-  Keyboard,
-  FileBarChart2
+  Minimize
 } from 'lucide-react';
 import timoraLogo from '../assets/timora-logo.jpg';
 
@@ -20,8 +18,7 @@ export default function Navbar({
   setIs24Hour, 
   onOpenBackgroundPicker,
   onOpenInstallModal,
-  onOpenShortcutsModal,
-  onOpenDailyReport
+  onOpenShortcutsModal
 }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -92,17 +89,6 @@ export default function Navbar({
 
       {/* Controls */}
       <div className="nav-controls">
-        {/* Daily Progress Report Button */}
-        <button 
-          className="control-btn"
-          onClick={onOpenDailyReport}
-          title="Export Daily Progress Report as Image (Press P)"
-          style={{ background: 'var(--primary-light)', color: 'var(--primary)', borderColor: 'rgba(255, 77, 109, 0.3)', fontWeight: '600' }}
-        >
-          <FileBarChart2 size={15} />
-          <span>Daily Report</span>
-        </button>
-
         <button 
           className="control-btn"
           onClick={() => setIs24Hour(!is24Hour)}
@@ -136,14 +122,7 @@ export default function Navbar({
           title={isFullscreen ? 'Exit Fullscreen (Press F)' : 'Fullscreen (Press F)'}
         >
           {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
-        </button>
-
-        <button 
-          className="control-btn"
-          onClick={onOpenShortcutsModal}
-          title="Keyboard Shortcuts (Press ?)"
-        >
-          <Keyboard size={15} />
+          <span>{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
         </button>
       </div>
     </header>
