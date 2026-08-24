@@ -1,15 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, SkipForward, Settings, CheckCircle2, Flame } from 'lucide-react';
+import { 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  SkipForward, 
+  Settings, 
+  CheckCircle2, 
+  Flame, 
+  History, 
+  Trash2, 
+  BookmarkPlus, 
+  Clock 
+} from 'lucide-react';
 import { soundFx } from '../utils/audio';
 
 /**
  * Pomodoro Component
  * 
  * Beginner React Concepts:
- * 1. Managing multiple related states (secondsLeft, isRunning, mode, stats).
- * 2. SVG Stroke Dasharray math for smooth circular countdown animation.
- * 3. Side effects triggered by timer expiration (playing sound, switching mode).
- * 4. Persisting session counts to browser `localStorage`.
+ * 1. Managing multiple related states (secondsLeft, isRunning, mode, stats, records).
+ * 2. Array state manipulation: Adding new items (`[newRecord, ...prev]`) and filtering (`prev.filter(...)`).
+ * 3. SVG Stroke Dasharray math for smooth circular countdown animation.
+ * 4. Persisting session records to browser `localStorage`.
  */
 
 export default function Pomodoro() {
@@ -37,6 +49,12 @@ export default function Pomodoro() {
     return saved ? JSON.parse(saved) : { completedToday: 0, totalMinutes: 0, streak: 0 };
   });
 
+  // Session Records List (persisted in localStorage)
+  const [records, setRecords] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_records');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   // Keep a ref to previous mode to detect changes
   const prevModeRef = useRef(mode);
 
@@ -48,7 +66,7 @@ export default function Pomodoro() {
     }
   }, [mode, durations]);
 
-  // Persist durations and stats
+  // Persist durations, stats, and records
   useEffect(() => {
     localStorage.setItem('pomodoro_durations', JSON.stringify(durations));
   }, [durations]);
@@ -56,6 +74,23 @@ export default function Pomodoro() {
   useEffect(() => {
     localStorage.setItem('pomodoro_stats', JSON.stringify(stats));
   }, [stats]);
+
+  useEffect(() => {
+    localStorage.setItem('pomodoro_records', JSON.stringify(records));
+  }, [records]);
+
+  // Helper to add a session record to the list
+  const addRecord = (type, durationMins, label = 'Completed') => {
+    const newRecord = {
+      id: Date.now().toString(),
+      type: type, // 'pomodoro' | 'shortBreak' | 'longBreak' | 'manual'
+      duration: durationMins,
+      timeString: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      dateString: new Date().toLocaleDateString([], { month: 'short', day: 'numeric' }),
+      label: label,
+    };
+    setRecords((prev) => [newRecord, ...prev]);
+  };
 
   // Timer interval countdown
   useEffect(() => {
@@ -71,17 +106,20 @@ export default function Pomodoro() {
       setIsRunning(false);
 
       if (mode === 'pomodoro') {
-        // Increment completed sessions
+        // Increment completed sessions and add record
         setStats((prev) => ({
           completedToday: prev.completedToday + 1,
           totalMinutes: prev.totalMinutes + durations.pomodoro,
           streak: prev.streak + 1,
         }));
+        addRecord('pomodoro', durations.pomodoro, 'Focus Session');
+
         // Switch to break
         const nextBreak = (stats.completedToday + 1) % 4 === 0 ? 'longBreak' : 'shortBreak';
         setMode(nextBreak);
       } else {
-        // Break finished, back to pomodoro
+        // Break finished, add record and back to pomodoro
+        addRecord(mode, durations[mode], mode === 'shortBreak' ? 'Short Break' : 'Long Break');
         setMode('pomodoro');
       }
     }
@@ -112,6 +150,23 @@ export default function Pomodoro() {
     } else {
       setMode('pomodoro');
     }
+  };
+
+  // Manual record bookmark button
+  const handleRecordCurrentInterval = () => {
+    const elapsedSeconds = durations[mode] * 60 - secondsLeft;
+    const elapsedMins = Math.max(1, Math.round(elapsedSeconds / 60));
+    addRecord(mode, elapsedMins, `${mode === 'pomodoro' ? 'Focus Lap' : 'Break Lap'}`);
+  };
+
+  // Delete a record item
+  const handleDeleteRecord = (idToRemove) => {
+    setRecords((prev) => prev.filter((r) => r.id !== idToRemove));
+  };
+
+  // Clear all records
+  const handleClearAllRecords = () => {
+    setRecords([]);
   };
 
   // Switch mode manually
@@ -214,6 +269,14 @@ export default function Pomodoro() {
 
         <button 
           className="btn-icon-action" 
+          onClick={handleRecordCurrentInterval}
+          title="Record current lap/session"
+        >
+          <BookmarkPlus size={18} />
+        </button>
+
+        <button 
+          className="btn-icon-action" 
           onClick={() => setShowSettings(!showSettings)}
           title="Configure custom durations"
         >
@@ -282,6 +345,63 @@ export default function Pomodoro() {
           </div>
           <span className="stat-label">Daily Streak</span>
         </div>
+      </div>
+
+      {/* Session Records History List */}
+      <div className="pomo-records-section">
+        <div className="records-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <History size={16} color="var(--accent-cyan)" />
+            <h4>Session Records ({records.length})</h4>
+          </div>
+
+          {records.length > 0 && (
+            <button 
+              className="clear-records-btn"
+              onClick={handleClearAllRecords}
+              title="Clear all records"
+            >
+              <Trash2 size={13} />
+              <span>Clear</span>
+            </button>
+          )}
+        </div>
+
+        {records.length === 0 ? (
+          <div className="empty-records-msg">
+            <Clock size={18} style={{ opacity: 0.5, marginBottom: '0.25rem' }} />
+            <p>No records logged yet. Complete a session or tap the bookmark button to record.</p>
+          </div>
+        ) : (
+          <div className="records-list">
+            {records.map((rec, index) => {
+              const isPomo = rec.type === 'pomodoro';
+              const isShort = rec.type === 'shortBreak';
+              const badgeClass = isPomo ? 'badge-pomo' : isShort ? 'badge-short' : 'badge-long';
+
+              return (
+                <div key={rec.id} className="record-item">
+                  <div className="record-left">
+                    <span className="record-index">#{records.length - index}</span>
+                    <span className={`record-badge ${badgeClass}`}>{rec.label}</span>
+                    <span className="record-duration">{rec.duration} min</span>
+                  </div>
+
+                  <div className="record-right">
+                    <span className="record-timestamp">{rec.dateString} {rec.timeString}</span>
+                    <button 
+                      className="delete-record-btn" 
+                      onClick={() => handleDeleteRecord(rec.id)}
+                      title="Delete record"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -615,8 +615,10 @@ body {
 .pomo-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .btn-primary-action {
@@ -687,6 +689,157 @@ body {
 .stat-label {
   font-size: 0.75rem;
   color: var(--text-dim);
+}
+
+/* Session Records History List */
+.pomo-records-section {
+  width: 100%;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--card-border);
+  padding-top: 1.25rem;
+  text-align: left;
+}
+
+.records-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.records-header h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.clear-records-btn {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.725rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.clear-records-btn:hover {
+  color: var(--accent-rose);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+.empty-records-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--card-border);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  transition: var(--transition-smooth);
+}
+
+.record-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.record-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.record-index {
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.record-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.badge-pomo {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.badge-short {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-long {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent-purple);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.record-duration {
+  font-family: var(--font-mono);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.record-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.record-timestamp {
+  color: var(--text-dim);
+  font-size: 0.725rem;
+  font-family: var(--font-mono);
+}
+
+.delete-record-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.delete-record-btn:hover {
+  color: var(--accent-rose);
 }
 
 /* YouTube Video Player Component */
