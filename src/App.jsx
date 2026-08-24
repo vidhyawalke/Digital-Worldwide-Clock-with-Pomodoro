@@ -8,6 +8,7 @@ import YouTubePlayer from './components/YouTubePlayer';
 import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
 import ShortcutsModal from './components/ShortcutsModal';
+import DailyReportModal from './components/DailyReportModal';
 import { WALLPAPER_CATEGORIES } from './data/wallpapers';
 
 export default function App() {
@@ -31,9 +32,10 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 4. Desktop App Install State & Shortcuts Modal
+  // 4. Modals: Install, Shortcuts, and Daily Progress Report
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isDailyReportOpen, setIsDailyReportOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
   // Catch PWA beforeinstallprompt event for desktop app download
@@ -64,6 +66,8 @@ export default function App() {
         setIsBgPickerOpen(prev => !prev);
       } else if (e.key.toLowerCase() === 'd') {
         setIsInstallModalOpen(prev => !prev);
+      } else if (e.key.toLowerCase() === 'p') {
+        setIsDailyReportOpen(prev => !prev);
       } else if (e.key === '?') {
         setIsShortcutsModalOpen(prev => !prev);
       } else if (e.key.toLowerCase() === 'f') {
@@ -150,6 +154,7 @@ export default function App() {
           onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
           onOpenInstallModal={() => setIsInstallModalOpen(true)}
           onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
+          onOpenDailyReport={() => setIsDailyReportOpen(true)}
         />
 
         <main>
@@ -191,6 +196,12 @@ export default function App() {
         <footer className="app-footer">
           <p>Timora &bull; Focus. Time. Anywhere.</p>
         </footer>
+
+        {/* Daily Progress Report Modal (Print & Save as Image PNG) */}
+        <DailyReportModal
+          isOpen={isDailyReportOpen}
+          onClose={() => setIsDailyReportOpen(false)}
+        />
 
         {/* Google Chrome Style Wallpaper Customizer Modal */}
         <BackgroundPicker
