@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Sun, Moon, Plus, Trash2, Globe2, MapPin, Check } from 'lucide-react';
+import { Search, Sun, Moon, Plus, Trash2, Globe2, Check, Loader2 } from 'lucide-react';
+import { searchGlobalCitiesAPI } from '../services/citiesApi';
 import { WORLD_CITIES_DB } from '../data/cities';
 
 const INITIAL_CITIES = [
@@ -10,8 +11,8 @@ const INITIAL_CITIES = [
   { id: '5', name: 'Dubai', country: 'United Arab Emirates', timezone: 'Asia/Dubai' },
   { id: '6', name: 'Singapore', country: 'Singapore', timezone: 'Asia/Singapore' },
   { id: '7', name: 'Sydney', country: 'Australia, NSW', timezone: 'Australia/Sydney' },
-  { id: '8', name: 'Mapusa', country: 'India, Goa', timezone: 'Asia/Kolkata' },
-  { id: '9', name: 'Mumbai', country: 'India, Maharashtra', timezone: 'Asia/Kolkata' },
+  { id: '8', name: 'Mapusa', country: 'Goa, India', timezone: 'Asia/Kolkata' },
+  { id: '9', name: 'Mumbai', country: 'Maharashtra, India', timezone: 'Asia/Kolkata' },
 ];
 
 export default function WorldClock({ is24Hour }) {
@@ -22,20 +23,25 @@ export default function WorldClock({ is24Hour }) {
 
   const [currentTime, setCurrentTime] = useState(new Date());
   
-  // Search bar state & autocomplete
+  // Search bar state & autocomplete from live API
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
 
-  // Add city form state & autocomplete
+  // Add city modal state & autocomplete from live API
   const [showAddCity, setShowAddCity] = useState(false);
   const [newCityName, setNewCityName] = useState('');
   const [newCityCountry, setNewCityCountry] = useState('');
   const [newCityTz, setNewCityTz] = useState('UTC');
+  const [formSuggestions, setFormSuggestions] = useState([]);
+  const [isFormLoading, setIsFormLoading] = useState(false);
   const [showFormSuggestions, setShowFormSuggestions] = useState(false);
 
   const searchContainerRef = useRef(null);
   const formContainerRef = useRef(null);
 
+  // Clock tick interval
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -43,6 +49,7 @@ export default function WorldClock({ is24Hour }) {
     return () => clearInterval(timer);
   }, []);
 
+  // Save active clocks to localStorage
   useEffect(() => {
     localStorage.setItem('world_clock_cities', JSON.stringify(cities));
   }, [cities]);
@@ -61,6 +68,57 @@ export default function WorldClock({ is24Hour }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Real-time API search for main search bar (with debounce)
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setSearchSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchLoading(true);
+      const apiResults = await searchGlobalCitiesAPI(searchQuery);
+      if (apiResults && apiResults.length > 0) {
+        setSearchSuggestions(apiResults);
+      } else {
+        // Local fallback
+        const localMatches = WORLD_CITIES_DB.filter(c => 
+          c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          c.country.toLowerCase().includes(searchQuery.toLowerCase())
+        ).slice(0, 8);
+        setSearchSuggestions(localMatches);
+      }
+      setIsSearchLoading(false);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Real-time API search for "Add City" form (with debounce)
+  useEffect(() => {
+    if (!newCityName || newCityName.trim().length < 2) {
+      setFormSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsFormLoading(true);
+      const apiResults = await searchGlobalCitiesAPI(newCityName);
+      if (apiResults && apiResults.length > 0) {
+        setFormSuggestions(apiResults);
+      } else {
+        const localMatches = WORLD_CITIES_DB.filter(c => 
+          c.name.toLowerCase().includes(newCityName.toLowerCase()) ||
+          c.country.toLowerCase().includes(newCityName.toLowerCase())
+        ).slice(0, 8);
+        setFormSuggestions(localMatches);
+      }
+      setIsFormLoading(false);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [newCityName]);
+
   const handleRemoveCity = (idToRemove) => {
     setCities(prev => prev.filter(city => city.id !== idToRemove));
   };
@@ -73,7 +131,6 @@ export default function WorldClock({ is24Hour }) {
   };
 
   const handleAddDirectCity = (cityItem) => {
-    // Check if already added
     const exists = cities.some(c => c.name.toLowerCase() === cityItem.name.toLowerCase());
     if (!exists) {
       const newCity = {
@@ -149,30 +206,14 @@ export default function WorldClock({ is24Hour }) {
   };
 
   // Filter existing active clocks
-  const filteredCities = cities.filter(city => 
+  const filteredActiveCities = cities.filter(city => 
     city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     city.country.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Global suggestions matching search query
-  const searchSuggestions = searchQuery.trim().length > 0
-    ? WORLD_CITIES_DB.filter(c => 
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.country.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 8)
-    : [];
-
-  // Form autocomplete suggestions matching form input
-  const formSuggestions = newCityName.trim().length > 0
-    ? WORLD_CITIES_DB.filter(c => 
-        c.name.toLowerCase().includes(newCityName.toLowerCase()) ||
-        c.country.toLowerCase().includes(newCityName.toLowerCase())
-      ).slice(0, 7)
-    : [];
-
   return (
     <section className="world-clock-container">
-      {/* Header and Search with Autocomplete Dropdown */}
+      {/* Header and Live Search with Autocomplete Dropdown */}
       <div className="section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h2 style={{ fontSize: '1.2rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-main)' }}>
           <Globe2 size={20} color="var(--primary)" />
@@ -180,13 +221,17 @@ export default function WorldClock({ is24Hour }) {
         </h2>
 
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          {/* Autocomplete Search Bar */}
+          {/* Autocomplete Search Bar connected to live global geocoding API */}
           <div className="search-input-wrapper" ref={searchContainerRef}>
-            <Search size={15} className="search-icon" />
+            {isSearchLoading ? (
+              <Loader2 size={15} className="search-icon spin-anim" />
+            ) : (
+              <Search size={15} className="search-icon" />
+            )}
             <input
               type="text"
               className="search-input"
-              placeholder="Search or add cities..."
+              placeholder="Search world database..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -195,7 +240,7 @@ export default function WorldClock({ is24Hour }) {
               onFocus={() => setIsSearchFocused(true)}
             />
 
-            {/* Global Search Dropdown */}
+            {/* Global API Search Dropdown */}
             {isSearchFocused && searchSuggestions.length > 0 && (
               <div className="autocomplete-dropdown">
                 {searchSuggestions.map((item, idx) => {
@@ -237,23 +282,23 @@ export default function WorldClock({ is24Hour }) {
         </div>
       </div>
 
-      {/* Add City Modal with Interactive Dropdown Filters (Matching user screenshot) */}
+      {/* Add City Modal with Real-Time Database Autocomplete Filters */}
       {showAddCity && (
         <form onSubmit={handleAddCity} className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem', position: 'relative' }}>
           <h3 style={{ fontSize: '1rem', marginBottom: '1rem', fontWeight: '600', color: 'var(--text-main)' }}>
-            Add New Location
+            Add New Location (Search Live Global Database)
           </h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-            {/* City Name with Real-Time Autocomplete Dropdown */}
+            {/* City Name with Real-Time Database Search */}
             <div style={{ position: 'relative' }} ref={formContainerRef}>
               <label style={{ fontSize: '0.775rem', fontWeight: '500', color: 'var(--text-muted)', display: 'block', marginBottom: '0.35rem' }}>
-                City Name
+                City Name (Search worldwide)
               </label>
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
-                  placeholder="e.g. Mapusa, Tokyo, London..."
+                  placeholder="Type any city (e.g. Mapusa, Maputo)..."
                   value={newCityName}
                   onChange={(e) => {
                     setNewCityName(e.target.value);
@@ -265,14 +310,19 @@ export default function WorldClock({ is24Hour }) {
                     width: '100%', 
                     padding: '0.55rem 0.75rem', 
                     borderRadius: '8px', 
-                    border: '1.5px solid var(--border-color)',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-input)',
+                    color: 'var(--text-main)',
                     fontFamily: 'var(--font-sans)',
                     fontSize: '0.875rem'
                   }}
                 />
+                {isFormLoading && (
+                  <Loader2 size={15} className="spin-anim" style={{ position: 'absolute', right: '10px', top: '12px', color: 'var(--primary)' }} />
+                )}
               </div>
 
-              {/* Dropdown Filters (Matching TimeAndDate template from screenshot) */}
+              {/* Real-Time Database Autocomplete Dropdown */}
               {showFormSuggestions && formSuggestions.length > 0 && (
                 <div className="autocomplete-dropdown form-dropdown">
                   {formSuggestions.map((item, idx) => (
@@ -302,14 +352,16 @@ export default function WorldClock({ is24Hour }) {
               </label>
               <input
                 type="text"
-                placeholder="e.g. India, Japan..."
+                placeholder="Auto-populated from API..."
                 value={newCityCountry}
                 onChange={(e) => setNewCityCountry(e.target.value)}
                 style={{ 
                   width: '100%', 
                   padding: '0.55rem 0.75rem', 
                   borderRadius: '8px', 
-                  border: '1.5px solid var(--border-color)',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-input)',
+                  color: 'var(--text-main)',
                   fontFamily: 'var(--font-sans)',
                   fontSize: '0.875rem'
                 }}
@@ -323,7 +375,7 @@ export default function WorldClock({ is24Hour }) {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Asia/Kolkata"
+                placeholder="Auto-populated from API..."
                 value={newCityTz}
                 onChange={(e) => setNewCityTz(e.target.value)}
                 required
@@ -331,7 +383,9 @@ export default function WorldClock({ is24Hour }) {
                   width: '100%', 
                   padding: '0.55rem 0.75rem', 
                   borderRadius: '8px', 
-                  border: '1.5px solid var(--border-color)',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-input)',
+                  color: 'var(--text-main)',
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.85rem'
                 }}
@@ -352,7 +406,7 @@ export default function WorldClock({ is24Hour }) {
 
       {/* World Clock Cards Grid */}
       <div className="world-clock-grid">
-        {filteredCities.map((city) => {
+        {filteredActiveCities.map((city) => {
           const isDay = isDaytimeInZone(city.timezone);
           const timeString = getTimeInZone(city.timezone);
           const dateString = getDateInZone(city.timezone);
