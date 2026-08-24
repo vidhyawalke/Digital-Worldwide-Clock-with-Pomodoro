@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Link2, Minimize2, Maximize2, Volume2 } from 'lucide-react';
 
-// Popular, 100% working, verified study & focus streams/tracks
+// Permanently available, non-live YouTube study & focus videos
 const STUDY_PRESETS = [
-  { id: 'jfKfPfyJRdk', title: 'Lofi Study' },
-  { id: '21qNxnCS8WU', title: 'Lofi Chill' },
-  { id: '4xDzrJKXOOY', title: 'Synthwave Radio' },
-  { id: 'WPni755-Krg', title: 'Peaceful Piano' },
-  { id: 'mPZkdNFkNps', title: 'Rain & Thunder' },
-  { id: 'DWcJFNfaw9c', title: 'Coffee Shop' },
+  { id: 'lTRuBLICdyw', title: 'Lofi Study' },
+  { id: 'e_KxYn22u4k', title: 'Lofi Chill' },
+  { id: 'A65aJ9L8O5A', title: 'Deep Focus' },
+  { id: 'P697j6o1a-U', title: 'Peaceful Piano' },
+  { id: 'nMfPqeZjc2c', title: 'Rain & Thunder' },
+  { id: 'h2zkV-yqYkE', title: 'Coffee Shop' },
 ];
 
 export default function YouTubePlayer() {
   const [inputUrl, setInputUrl] = useState('');
   const [videoId, setVideoId] = useState(() => {
-    return localStorage.getItem('custom_yt_video_id') || 'jfKfPfyJRdk';
+    return localStorage.getItem('custom_yt_video_id') || 'lTRuBLICdyw';
   });
   const [isMinimized, setIsMinimized] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
