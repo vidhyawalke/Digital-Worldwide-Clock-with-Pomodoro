@@ -9,6 +9,7 @@ import {
   VolumeX
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
+import ShinyText from './ShinyText';
 
 export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked }) {
   const [durations, setDurations] = useState(() => {
@@ -161,7 +162,13 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked })
 
           {/* Mode Label */}
           <div className="clean-timer-mode-name">
-            {mode === 'pomodoro' ? 'Pomodoro' : mode === 'shortBreak' ? 'Short Break' : 'Long Break'}
+            <ShinyText
+              text={mode === 'pomodoro' ? 'Pomodoro' : mode === 'shortBreak' ? 'Short Break' : 'Long Break'}
+              color="var(--primary)"
+              shineColor="#FFA685"
+              speed={2.2}
+              spread={110}
+            />
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ import MethodModal from './components/MethodModal';
 import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
 import ShortcutsModal from './components/ShortcutsModal';
+import ShinyText from './components/ShinyText';
 
 export default function App() {
   // 1. Sliding Sidebar Open/Close Window state (default open, sliding window)
@@ -236,7 +237,13 @@ export default function App() {
           {/* Bottom Motivational Quote */}
           <footer className="timora-bottom-quote-bar">
             <p className="timora-quote-text">
-              &ldquo;Discipline is choosing between what you want now and what you want most.&rdquo;
+              <ShinyText
+                text="“Discipline is choosing between what you want now and what you want most.”"
+                color={isDarkMode ? '#A8A29A' : '#7D7871'}
+                shineColor="var(--primary)"
+                speed={3}
+                spread={90}
+              />
             </p>
           </footer>
         </main>

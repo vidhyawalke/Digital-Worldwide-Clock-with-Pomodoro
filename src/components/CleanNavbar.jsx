@@ -8,6 +8,7 @@ import {
   PanelLeftOpen,
   Image as ImageIcon
 } from 'lucide-react';
+import ShinyText from './ShinyText';
 
 export default function CleanNavbar({
   isSidebarOpen,
@@ -47,7 +48,15 @@ export default function CleanNavbar({
         >
           {isSidebarOpen ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}
         </button>
-        <h1 className="timora-clean-logo">Timora</h1>
+        <h1 className="timora-clean-logo">
+          <ShinyText 
+            text="Timora" 
+            color={isDarkMode ? '#FBF9F5' : '#1F1D1B'} 
+            shineColor="var(--primary)" 
+            speed={2.5} 
+            spread={100}
+          />
+        </h1>
       </div>
 
       {/* Right: Wallpaper, Light/Dark Mode & Fullscreen */}
