@@ -137,9 +137,11 @@ export default function FocusTimerCard({ onSessionComplete, onTimeTracked }) {
       </div>
 
       {/* Main Serif Catchphrase Title */}
-      <h2 className="focus-editorial-title">
-        Stay present,<br />grow consistently
-      </h2>
+      <div className="focus-title-wrap-with-sticker">
+        <h2 className="focus-editorial-title">
+          Stay present,<br />grow consistently
+        </h2>
+      </div>
 
       {/* Mode Switcher Tabs */}
       <div className="focus-mode-pills">

@@ -12,6 +12,7 @@ import {
   LogOut,
   Sparkles
 } from 'lucide-react';
+import { OpenJournalSticker, SparkleStarSticker } from './PomodoroStickers';
 
 const INITIAL_EVENTS = [
   { id: '1', title: 'Project Deadline', time: '11:00 AM', color: '#D95D39', date: 24 },
@@ -191,7 +192,10 @@ export default function RightSidebar({ onOpenAnalytics, userEmail = 'vidhya@gmai
         {/* Today's Events Divider & List */}
         <div className="calendar-events-section">
           <div className="events-header">
-            <span className="events-title">Today's Events</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span className="events-title">Today's Events</span>
+              <SparkleStarSticker size={16} />
+            </div>
             <button 
               className="events-add-btn" 
               onClick={() => setIsAddingEvent(!isAddingEvent)}

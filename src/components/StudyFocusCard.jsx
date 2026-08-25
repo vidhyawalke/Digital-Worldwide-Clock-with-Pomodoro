@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Play, Link2, Volume2, Sparkles, Music2, ExternalLink } from 'lucide-react';
+import { BobaTeaSticker, WorkLaptopSticker, SparkleStarSticker } from './PomodoroStickers';
 
 const STUDY_PRESETS = [
   { id: 'jfKfPfyJRdk', title: 'Lofi Girl Live' },
@@ -91,9 +92,14 @@ export default function StudyFocusCard({ onOpenFullYouTube }) {
 
         {/* Right Side: Copy & CTA */}
         <div className="study-copy-col">
-          <h3 className="study-copy-title">
-            Study better with<br />focus music
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <h3 className="study-copy-title">
+              Study better with<br />focus music
+            </h3>
+            <div className="study-boba-sticker-badge" style={{ transform: 'rotate(8deg) translateY(-8px)' }}>
+              <BobaTeaSticker size={65} />
+            </div>
+          </div>
           <p className="study-copy-desc">
             Play calming lo-fi beats on YouTube while you work. It helps improve concentration and keeps distractions away.
           </p>

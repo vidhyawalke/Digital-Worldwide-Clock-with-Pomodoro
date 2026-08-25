@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Plus, Trash2, CheckSquare, Sparkles } from 'lucide-react';
+import { PencilSticker, PaperclipSticker } from './PomodoroStickers';
 
 const INITIAL_TASKS = [
   { id: '1', title: 'Review project brief', completed: true, active: false },
@@ -73,7 +74,12 @@ export default function TasksWidget({ onTasksChange }) {
       <div className="tasks-card-header">
         <div>
           <div className="tasks-category-badge">DAILY ROUTINE</div>
-          <h2 className="tasks-card-title">Today's Tasks</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <h2 className="tasks-card-title">Today's Tasks</h2>
+            <div className="header-sticker-clip" style={{ transform: 'rotate(12deg)' }}>
+              <PaperclipSticker size={20} />
+            </div>
+          </div>
         </div>
         <div className="tasks-count-pill">
           {completedCount} of {totalCount} completed

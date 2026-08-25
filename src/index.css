@@ -1669,13 +1669,13 @@ input, select, textarea {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   9. MODALS & SUB-VIEWS
+   9. MODALS & SUB-VIEWS (Pomodoro Poster & Stickers)
    ────────────────────────────────────────────────────────────────────────── */
 .modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(18, 16, 14, 0.45);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1695,28 +1695,238 @@ input, select, textarea {
   animation: modalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+/* Method Sticker Modal Specific */
+.method-sticker-modal-content {
+  max-width: 720px;
+  background: #F6F1EA;
+  border: 2px solid #DBCDC0;
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
 }
 
-.modal-close-btn {
-  color: var(--text-muted);
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-xs);
+.modal-sticker-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #E8D9CB;
+  color: #7D6553;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 20;
   transition: all 0.15s ease;
+  border: 1px solid #D5C2B1;
 }
 
-.modal-close-btn:hover {
-  background: var(--bg-input);
-  color: var(--text-main);
+.modal-sticker-close-btn:hover {
+  background: #D9C5B4;
+  color: #4A3828;
+  transform: scale(1.05);
+}
+
+.pomodoro-poster-board {
+  padding: 2.25rem 2rem 1.5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Poster Decor */
+.board-decor-dots {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-image: radial-gradient(#D5C4B4 1.8px, transparent 1.8px);
+  background-size: 8px 8px;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.board-decor-dots.top-right {
+  top: 1.25rem;
+  right: 1.5rem;
+}
+
+.board-decor-dots.top-left {
+  top: 2rem;
+  left: 1.5rem;
+  transform: rotate(45deg);
+}
+
+/* Top Central Cloud Sticker Header */
+.poster-header-center {
+  position: relative;
+  margin-bottom: 1.75rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pomodoro-cloud-sticker-header {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pomodoro-big-cloud {
+  background: #BFA591;
+  border: 3px solid #E6D8CA;
+  border-radius: 50px / 40px;
+  padding: 1.15rem 2.25rem;
+  box-shadow: 0 4px 14px rgba(110, 85, 65, 0.15);
+  position: relative;
+  max-width: 380px;
+  text-align: center;
+}
+
+.cloud-title-text {
+  font-family: var(--font-sans);
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 2px rgba(60, 45, 30, 0.2);
+}
+
+.cloud-crown-wrapper {
+  position: absolute;
+  top: -24px;
+  right: 36px;
+  transform: rotate(10deg);
+  z-index: 2;
+}
+
+.cloud-sparkle-wrapper {
+  position: absolute;
+  bottom: -12px;
+  right: -10px;
+  transform: rotate(15deg);
+  z-index: 2;
+}
+
+/* 5-Step Grid */
+.poster-stickers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem 1rem;
+  width: 100%;
+  max-width: 620px;
+  margin-bottom: 1rem;
+}
+
+.sticker-item-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.55rem;
+  transition: transform 0.2s ease;
+}
+
+.sticker-item-block:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+.sticker-item-block.step-4 {
+  grid-column: 1 / 2;
+  margin-left: 2rem;
+}
+
+.sticker-item-block.step-5 {
+  grid-column: 3 / 4;
+  margin-right: 2rem;
+}
+
+.sticker-badge-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 3px 6px rgba(100, 75, 55, 0.12));
+}
+
+.sticker-caption-handwritten {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6B5544;
+  line-height: 1.3;
+  max-width: 140px;
+}
+
+/* Floating Accent Stickers */
+.floating-sticker {
+  position: absolute;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(80, 60, 45, 0.15));
+}
+
+.floating-sticker.pencil-pos {
+  left: 2.25rem;
+  bottom: 5.5rem;
+  transform: rotate(-35deg);
+}
+
+.floating-sticker.paperclip-pos {
+  left: 4.85rem;
+  bottom: 6.25rem;
+  transform: rotate(15deg);
+}
+
+.floating-sticker.coil-pos {
+  left: 48%;
+  bottom: 4.5rem;
+  transform: translateX(-50%);
+}
+
+.floating-sticker.sparkle-pos {
+  right: 2.25rem;
+  bottom: 6.5rem;
+  transform: rotate(20deg);
+}
+
+.sticker-anim {
+  transition: transform 0.25s ease;
+}
+
+.sticker-modal-footer {
+  padding: 1rem 2rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  background: transparent;
+}
+
+.sticker-start-btn {
+  background: #B36A4C;
+  color: #FFFFFF;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 4px 15px rgba(179, 106, 76, 0.25);
+  transition: all 0.2s ease;
+}
+
+.sticker-start-btn:hover {
+  background: #9E5638;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(179, 106, 76, 0.35);
+}
+
+.scalloped-badge-wrapper {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.scalloped-badge-wrapper:hover {
+  transform: scale(1.04) rotate(2deg);
 }
 
 /* Method Modal Specific */

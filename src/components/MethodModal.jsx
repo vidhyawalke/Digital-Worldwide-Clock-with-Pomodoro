@@ -1,83 +1,114 @@
 import React from 'react';
-import { X, Flame, Clock, Coffee, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, Play } from 'lucide-react';
+import { 
+  BigCloudTitleSticker,
+  SetTasksSticker,
+  ClockTimerSticker,
+  WorkLaptopSticker,
+  BobaTeaSticker,
+  OpenJournalSticker,
+  PencilSticker,
+  PaperclipSticker,
+  CrownSticker,
+  SparkleStarSticker,
+  CoilDoodleSticker
+} from './PomodoroStickers';
 
 export default function MethodModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
-  const steps = [
-    {
-      num: '01',
-      title: 'Pick a Single Task',
-      desc: 'Select one clear priority from your daily task list. Eliminate distractions before starting.',
-      icon: <CheckCircle2 size={20} color="var(--primary)" />
-    },
-    {
-      num: '02',
-      title: 'Focus for 25 Minutes',
-      desc: 'Set the Pomodoro timer and work with deep focus until the gentle chime rings.',
-      icon: <Clock size={20} color="var(--primary)" />
-    },
-    {
-      num: '03',
-      title: 'Take a 5-Minute Break',
-      desc: 'Step away from your screen. Stretch, hydrate, and give your mind time to refresh.',
-      icon: <Coffee size={20} color="var(--primary)" />
-    },
-    {
-      num: '04',
-      title: 'Repeat & Long Rest',
-      desc: 'After 4 focus sessions, take an extended 15-30 minute break to recharge completely.',
-      icon: <Sparkles size={20} color="var(--primary)" />
-    }
-  ];
-
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content method-modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <div className="method-badge-icon">
-              <Flame size={18} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-main)', margin: 0 }}>
-                The Pomodoro Technique
-              </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                A time-tested science-backed framework for deep focus and productivity.
-              </p>
-            </div>
-          </div>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            <X size={18} />
-          </button>
-        </div>
+      <div 
+        className="modal-content method-sticker-modal-content" 
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button Top Right */}
+        <button 
+          className="modal-sticker-close-btn" 
+          onClick={onClose} 
+          aria-label="Close modal"
+        >
+          <X size={18} />
+        </button>
 
-        <div className="method-modal-body">
-          <div className="method-steps-grid">
-            {steps.map((step) => (
-              <div key={step.num} className="method-step-card">
-                <div className="method-step-top">
-                  <span className="method-step-num">{step.num}</span>
-                  {step.icon}
-                </div>
-                <h4 className="method-step-title">{step.title}</h4>
-                <p className="method-step-desc">{step.desc}</p>
+        {/* Sticker Poster Board */}
+        <div className="pomodoro-poster-board">
+          {/* Ambient Background Doodles */}
+          <div className="board-decor-dots top-right"></div>
+          <div className="board-decor-dots top-left"></div>
+          <div className="board-squiggle-left"></div>
+
+          {/* 1. Top Central Cloud Sticker Header */}
+          <div className="poster-header-center">
+            <BigCloudTitleSticker title="Optimizing Your Time with the Pomodoro Technique" />
+          </div>
+
+          {/* 2. Stickers 5-Step Grid */}
+          <div className="poster-stickers-grid">
+            {/* Step 1: Set the tasks */}
+            <div className="sticker-item-block step-1">
+              <div className="sticker-badge-container">
+                <SetTasksSticker size={105} />
               </div>
-            ))}
+              <span className="sticker-caption-handwritten">Set the tasks</span>
+            </div>
+
+            {/* Step 2: Set the 25-minute timer */}
+            <div className="sticker-item-block step-2">
+              <div className="sticker-badge-container">
+                <ClockTimerSticker size={108} />
+              </div>
+              <span className="sticker-caption-handwritten">Set the 25-minute timer.</span>
+            </div>
+
+            {/* Step 3: Use the timer while working */}
+            <div className="sticker-item-block step-3">
+              <div className="sticker-badge-container">
+                <WorkLaptopSticker size={105} />
+              </div>
+              <span className="sticker-caption-handwritten">Use the timer while working</span>
+            </div>
+
+            {/* Step 4: Take a 5 minute breaks */}
+            <div className="sticker-item-block step-4">
+              <div className="sticker-badge-container">
+                <BobaTeaSticker size={105} />
+              </div>
+              <span className="sticker-caption-handwritten">Take a 5 minute breaks</span>
+            </div>
+
+            {/* Step 5: Take a notes */}
+            <div className="sticker-item-block step-5">
+              <div className="sticker-badge-container">
+                <OpenJournalSticker size={105} />
+              </div>
+              <span className="sticker-caption-handwritten">Take a notes</span>
+            </div>
           </div>
 
-          <div className="method-tip-box">
-            <div className="method-tip-title">💡 Pro Tip for Flow State:</div>
-            <p className="method-tip-text">
-              Pair your 25-minute sprints with our built-in Lo-fi focus radio. Instrumental soundscapes lower cortisol and prevent mind wandering.
-            </p>
+          {/* 3. Floating Accent Stickers */}
+          <div className="floating-sticker pencil-pos" title="Pencil Sticker">
+            <PencilSticker size={32} />
+          </div>
+
+          <div className="floating-sticker paperclip-pos" title="Paperclip Sticker">
+            <PaperclipSticker size={28} />
+          </div>
+
+          <div className="floating-sticker coil-pos" title="Coil Doodle">
+            <CoilDoodleSticker size={42} />
+          </div>
+
+          <div className="floating-sticker sparkle-pos" title="Sparkle Star">
+            <SparkleStarSticker size={26} />
           </div>
         </div>
 
-        <div className="modal-footer" style={{ justifyContent: 'flex-end' }}>
-          <button className="primary-btn" onClick={onClose} style={{ padding: '0.6rem 1.4rem' }}>
-            <span>Start Focusing Now</span>
+        {/* Footer Action */}
+        <div className="sticker-modal-footer">
+          <button className="primary-btn sticker-start-btn" onClick={onClose}>
+            <span>Start My 25-Min Sprint</span>
             <ArrowRight size={16} />
           </button>
         </div>
