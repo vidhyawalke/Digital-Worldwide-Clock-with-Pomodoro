@@ -8,7 +8,11 @@ import {
   Search,
   MapPin,
   Navigation,
-  Plus
+  Image as ImageIcon,
+  Upload,
+  Link as LinkIcon,
+  RotateCcw,
+  Sparkles
 } from 'lucide-react';
 import ShinyText from './ShinyText';
 import { searchGlobalCitiesAPI } from '../services/citiesApi';
@@ -47,7 +51,19 @@ const POPULAR_HUBS = [
   { name: 'Mumbai', country: 'India', countryCode: 'in', tz: 'Asia/Kolkata', lat: 19.0760, lon: 72.8777 },
 ];
 
-export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
+// Curated Unsplash Wallpapers
+const CURATED_WALLPAPERS = [
+  { id: '1', title: 'Mountain Mist', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2000&auto=format&fit=crop' },
+  { id: '2', title: 'Minimalist Architecture', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2000&auto=format&fit=crop' },
+  { id: '3', title: 'Cozy Study Cafe', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=2000&auto=format&fit=crop' },
+  { id: '4', title: 'Tokyo Neon Night', url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=2000&auto=format&fit=crop' },
+  { id: '5', title: 'Deep Forest Green', url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2000&auto=format&fit=crop' },
+  { id: '6', title: 'Sunset Ocean Wave', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000&auto=format&fit=crop' },
+  { id: '7', title: 'Lofi Gradient Glow', url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2000&auto=format&fit=crop' },
+  { id: '8', title: 'Nordic Interior Study', url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2000&auto=format&fit=crop' },
+];
+
+export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, onSelectBg }) {
   const [now, setNow] = useState(new Date());
 
   // 1. Weather State
@@ -72,7 +88,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
         if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, 4);
       } catch {}
     }
-    // Default 1 addon clock (Tokyo)
     return [
       { id: '1', label: 'Tokyo', country: 'Japan', countryCode: 'jp', tz: 'Asia/Tokyo' }
     ];
@@ -81,7 +96,12 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
   const [isAddClockModalOpen, setIsAddClockModalOpen] = useState(false);
   const [clockSearchQuery, setClockSearchQuery] = useState('');
   const [clockSearchResults, setClockSearchResults] = useState([]);
-  const [isSearchingClock, setIsSearchingClock] = useState(false);
+
+  // 3. Wallpaper Picker Modal
+  const [isBgModalOpen, setIsBgModalOpen] = useState(false);
+  const [customBgUrl, setCustomBgUrl] = useState('');
+  const [unsplashKeyword, setUnsplashKeyword] = useState('');
+  const fileInputRef = useRef(null);
 
   // Tick clock every second
   useEffect(() => {
@@ -174,7 +194,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
         return;
       } catch {}
     }
-    // Default to Assagao / Goa / India
     fetchWeatherForCoords(15.5937, 73.8142, 'Assagao', 'in');
   }, []);
 
@@ -195,14 +214,11 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
   useEffect(() => {
     if (!clockSearchQuery.trim() || clockSearchQuery.length < 2) {
       setClockSearchResults([]);
-      setIsSearchingClock(false);
       return;
     }
-    setIsSearchingClock(true);
     const timer = setTimeout(async () => {
       const res = await searchGlobalCitiesAPI(clockSearchQuery);
       setClockSearchResults(res);
-      setIsSearchingClock(false);
     }, 280);
     return () => clearTimeout(timer);
   }, [clockSearchQuery]);
@@ -239,10 +255,42 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
     setClockSearchQuery('');
   };
 
-  // Remove clock handler
   const handleRemoveClock = (id, e) => {
     e.stopPropagation();
     setForeignClocks(prev => prev.filter(c => c.id !== id));
+  };
+
+  // Local PC File Upload Handler
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        onSelectBg(event.target.result);
+        setIsBgModalOpen(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Custom URL Submit Handler
+  const handleCustomBgSubmit = (e) => {
+    e.preventDefault();
+    if (!customBgUrl.trim()) return;
+    onSelectBg(customBgUrl.trim());
+    setCustomBgUrl('');
+    setIsBgModalOpen(false);
+  };
+
+  // Unsplash Search / Keyword Handler
+  const handleUnsplashKeywordSubmit = (e) => {
+    e.preventDefault();
+    if (!unsplashKeyword.trim()) return;
+    const unsplashUrl = `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000&auto=format&fit=crop&sig=${encodeURIComponent(unsplashKeyword.trim())}`;
+    onSelectBg(unsplashUrl);
+    setUnsplashKeyword('');
+    setIsBgModalOpen(false);
   };
 
   return (
@@ -321,8 +369,20 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
           )}
         </div>
 
-        {/* Right: Theme Toggle */}
+        {/* Right: Theme Toggle & Choose Background Button */}
         <div className="navbar-controls-section">
+          {/* Choose Background Button */}
+          <button
+            className="navbar-text-toggle-btn navbar-bg-btn"
+            onClick={() => setIsBgModalOpen(true)}
+            title="Choose Background Wallpaper"
+            aria-label="Choose background"
+          >
+            <ImageIcon size={14} />
+            <span>Choose BG</span>
+          </button>
+
+          {/* Dark / Light Toggle Button */}
           <button
             className="navbar-text-toggle-btn"
             onClick={onToggleDarkMode}
@@ -334,6 +394,97 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
           </button>
         </div>
       </header>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          CHOOSE BACKGROUND / WALLPAPER MODAL
+         ══════════════════════════════════════════════════════════════════════ */}
+      {isBgModalOpen && (
+        <div className="timora-modal-overlay" onClick={() => setIsBgModalOpen(false)}>
+          <div className="timora-modal-dialog bg-picker-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="timora-modal-header">
+              <div className="modal-title-wrap">
+                <ImageIcon size={18} color="var(--primary)" />
+                <h3>Choose Background</h3>
+              </div>
+              <button className="modal-close-btn" onClick={() => setIsBgModalOpen(false)}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="timora-modal-body bg-modal-body">
+              {/* Option A: Upload from PC / Computer */}
+              <div className="bg-modal-section">
+                <span className="presets-label">Upload from PC:</span>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                />
+                <button 
+                  className="bg-upload-pc-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload size={15} />
+                  <span>Choose Image File from Your Device</span>
+                </button>
+              </div>
+
+              {/* Option B: Direct Image / Unsplash URL */}
+              <div className="bg-modal-section">
+                <span className="presets-label">Paste Image / Unsplash Link:</span>
+                <form onSubmit={handleCustomBgSubmit} className="bg-url-form">
+                  <div className="modal-search-input-wrap" style={{ flex: 1 }}>
+                    <LinkIcon size={14} className="search-icon" />
+                    <input
+                      type="url"
+                      placeholder="Paste https://images.unsplash.com/... or any image URL"
+                      value={customBgUrl}
+                      onChange={(e) => setCustomBgUrl(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit" className="bg-apply-btn">Apply</button>
+                </form>
+              </div>
+
+              {/* Option C: Curated Aesthetic Wallpapers */}
+              <div className="bg-modal-section">
+                <span className="presets-label">Curated Unsplash Wallpapers:</span>
+                <div className="bg-curated-grid">
+                  {CURATED_WALLPAPERS.map((wp) => (
+                    <button
+                      key={wp.id}
+                      className={`bg-thumb-card ${customBg === wp.url ? 'active' : ''}`}
+                      onClick={() => {
+                        onSelectBg(wp.url);
+                        setIsBgModalOpen(false);
+                      }}
+                    >
+                      <img src={wp.url} alt={wp.title} className="bg-thumb-img" loading="lazy" />
+                      <span className="bg-thumb-title">{wp.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reset to Default */}
+              {customBg && (
+                <button
+                  className="bg-reset-default-btn"
+                  onClick={() => {
+                    onSelectBg(null);
+                    setIsBgModalOpen(false);
+                  }}
+                >
+                  <RotateCcw size={14} />
+                  <span>Reset to Default Theme Background</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════════
           WEATHER LOCATION MODAL (Places API + GPS)
@@ -352,7 +503,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
             </div>
 
             <div className="timora-modal-body">
-              {/* GPS Auto-detect Button */}
               <button 
                 className="modal-gps-btn"
                 onClick={requestBrowserGeolocation}
@@ -372,7 +522,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
                 <span>OR SEARCH ANY PLACE / VILLAGE / CITY</span>
               </div>
 
-              {/* Place Search Bar */}
               <div className="modal-search-input-wrap">
                 <Search size={14} className="search-icon" />
                 <input
@@ -389,7 +538,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
                 )}
               </div>
 
-              {/* Dynamic Places Results */}
               {weatherResults.length > 0 ? (
                 <div className="modal-city-list">
                   {weatherResults.map((item) => (
@@ -453,7 +601,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
             </div>
 
             <div className="timora-modal-body">
-              {/* Place Search Bar */}
               <div className="modal-search-input-wrap">
                 <Search size={14} className="search-icon" />
                 <input
@@ -470,7 +617,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode }) {
                 )}
               </div>
 
-              {/* Dynamic Search Results */}
               {clockSearchResults.length > 0 ? (
                 <div className="modal-city-list">
                   {clockSearchResults.map((city) => (

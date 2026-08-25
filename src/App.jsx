@@ -23,6 +23,11 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
+  // Custom Wallpaper Background (Unsplash, PC upload, or custom URL)
+  const [customBg, setCustomBg] = useState(() => {
+    return localStorage.getItem('timora_custom_bg') || null;
+  });
+
   useEffect(() => {
     localStorage.setItem('timora_dark_mode', JSON.stringify(isDarkMode));
     if (isDarkMode) {
@@ -32,8 +37,22 @@ export default function App() {
     }
   }, [isDarkMode]);
 
+  useEffect(() => {
+    if (customBg) {
+      localStorage.setItem('timora_custom_bg', customBg);
+    } else {
+      localStorage.removeItem('timora_custom_bg');
+    }
+  }, [customBg]);
+
   return (
-    <div className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}>
+    <div 
+      className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'} ${customBg ? 'has-custom-wallpaper' : ''}`}
+      style={customBg ? { backgroundImage: `url("${customBg}")` } : {}}
+    >
+      {/* Subtle glass overlay scrim when custom background is active */}
+      {customBg && <div className="wallpaper-scrim-overlay" />}
+
       {/* ── SPLASH OVERLAY (Initial session load) ── */}
       {showLanding && (
         <LandingScreen
@@ -42,13 +61,15 @@ export default function App() {
         />
       )}
 
-      {/* ── TOP NAVBAR (Logo + 3 Widgets + Controls) ── */}
+      {/* ── TOP NAVBAR (Logo + Clocks + Weather + BG Picker + Theme Toggle) ── */}
       <CleanNavbar
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+        customBg={customBg}
+        onSelectBg={(bgUrl) => setCustomBg(bgUrl)}
       />
 
-      {/* ── MAIN TWO-COLUMN WORKSPACE ── */}
+      {/* ── MAIN TWO-COLUMN WORKSPACE (100vh Static Board) ── */}
       <main className="timora-main-content-window">
         <div className="timora-two-column-stage">
           {/* Primary Column: Hero Pomodoro + Session Tasks */}
