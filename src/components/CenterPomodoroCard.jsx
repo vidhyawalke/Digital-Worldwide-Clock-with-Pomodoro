@@ -6,10 +6,12 @@ import {
   SkipForward, 
   Volume2, 
   VolumeX,
-  User
+  Camera,
+  Share2
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import ShinyText from './ShinyText';
+import SessionSnapshotModal from './SessionSnapshotModal';
 
 const FOCUS_PRESETS = [
   { id: 'work', label: 'WORK', minutes: 25 },
@@ -20,12 +22,13 @@ const FOCUS_PRESETS = [
   { id: 'longBreak', label: 'LONG BREAK', minutes: 15, isBreak: true },
 ];
 
-export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked }) {
+export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, isDarkMode }) {
   const [selectedPresetId, setSelectedPresetId] = useState('work');
   const [activeMinutes, setActiveMinutes] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isSnapshotOpen, setIsSnapshotOpen] = useState(false);
 
   // Session-based state (lives in active browser session)
   const [currentSessionIndex, setCurrentSessionIndex] = useState(() => {
@@ -139,7 +142,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked })
       {/* Subtle blueprint grid overlay */}
       <div className="analog-blueprint-grid"></div>
 
-      {/* Top Technical Status Header with Session Indicator */}
+      {/* Top Technical Status Header with Session Indicator & Snapshot Action */}
       <div className="analog-stage-top-bar">
         {/* Left: User & Session Tag (inspired by Analog Lab) */}
         <div className="analog-user-session-col">
@@ -154,14 +157,25 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked })
           </span>
         </div>
 
-        {/* Right: Sound Chime Toggle */}
-        <button 
-          className="analog-sound-btn"
-          onClick={() => setIsMuted(!isMuted)}
-          title={isMuted ? 'Unmute timer chimes' : 'Mute timer chimes'}
-        >
-          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-        </button>
+        {/* Right: Snapshot Card & Sound Chime Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          <button 
+            className="analog-snapshot-btn"
+            onClick={() => setIsSnapshotOpen(true)}
+            title="Get and download an image of your focus session"
+          >
+            <Camera size={13} />
+            <span>GET IMAGE</span>
+          </button>
+
+          <button 
+            className="analog-sound-btn"
+            onClick={() => setIsMuted(!isMuted)}
+            title={isMuted ? 'Unmute timer chimes' : 'Mute timer chimes'}
+          >
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          </button>
+        </div>
       </div>
 
       {/* Preset Category Switcher (WORK, STUDY, READ, CODE, BREAK) */}
@@ -231,6 +245,16 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked })
           <SkipForward size={13} />
         </button>
       </div>
+
+      {/* Session Snapshot / Export Image Modal */}
+      <SessionSnapshotModal
+        isOpen={isSnapshotOpen}
+        onClose={() => setIsSnapshotOpen(false)}
+        sessionTag={sessionTag}
+        modeLabel={currentPreset.label}
+        activeMinutes={activeMinutes}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }

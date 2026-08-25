@@ -640,6 +640,29 @@ input, select {
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
 }
 
+.analog-snapshot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-body);
+  transition: all 0.15s ease;
+}
+
+.analog-snapshot-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
 .analog-sound-btn {
   color: var(--text-muted);
   width: 26px;
@@ -1362,6 +1385,73 @@ input, select {
 /* Wallpaper Modal Dialog */
 .wallpaper-modal-dialog {
   max-width: 720px;
+}
+
+/* Session Snapshot Modal */
+.session-snapshot-modal {
+  max-width: 620px;
+}
+
+.session-snapshot-body {
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.canvas-preview-wrapper {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.session-snapshot-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.4rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.snapshot-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: all 0.18s ease;
+}
+
+.snapshot-action-btn.secondary {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-body);
+}
+
+.snapshot-action-btn.secondary:hover {
+  background: var(--bg-card-subtle);
+  color: var(--text-main);
+}
+
+.snapshot-action-btn.primary {
+  background: var(--primary);
+  color: #FFFFFF;
+  border: 1px solid var(--primary);
+  box-shadow: 0 2px 10px var(--primary-glow);
+}
+
+.snapshot-action-btn.primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .modal-body-scroll {

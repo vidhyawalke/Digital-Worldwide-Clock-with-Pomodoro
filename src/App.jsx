@@ -165,6 +165,7 @@ export default function App() {
                 <CenterPomodoroCard
                   onSessionComplete={handleSessionComplete}
                   onTimeTracked={handleTimeTracked}
+                  isDarkMode={isDarkMode}
                 />
                 <CleanTasksCard />
               </div>
