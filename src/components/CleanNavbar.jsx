@@ -8,7 +8,8 @@ import {
   Image as ImageIcon,
   Upload,
   Link as LinkIcon,
-  RotateCcw
+  RotateCcw,
+  Plus
 } from 'lucide-react';
 import ShinyText from './ShinyText';
 import { searchGlobalCitiesAPI } from '../services/citiesApi';
@@ -37,9 +38,9 @@ export function CountryFlag({ countryCode = 'un', name = '', size = 'sm' }) {
 
 // Top Popular Global Hubs for Quick Selection
 const POPULAR_HUBS = [
-  { name: 'Tokyo', country: 'Japan', countryCode: 'jp', tz: 'Asia/Tokyo', lat: 35.6762, lon: 139.6503 },
   { name: 'London', country: 'United Kingdom', countryCode: 'gb', tz: 'Europe/London', lat: 51.5074, lon: -0.1278 },
   { name: 'New York', country: 'United States', countryCode: 'us', tz: 'America/New_York', lat: 40.7128, lon: -74.0060 },
+  { name: 'Tokyo', country: 'Japan', countryCode: 'jp', tz: 'Asia/Tokyo', lat: 35.6762, lon: 139.6503 },
   { name: 'Dubai', country: 'UAE', countryCode: 'ae', tz: 'Asia/Dubai', lat: 25.2048, lon: 55.2708 },
   { name: 'Paris', country: 'France', countryCode: 'fr', tz: 'Europe/Paris', lat: 48.8566, lon: 2.3522 },
   { name: 'Singapore', country: 'Singapore', countryCode: 'sg', tz: 'Asia/Singapore', lat: 1.3521, lon: 103.8198 },
@@ -75,14 +76,14 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
 
   // 2. Up to 4 Addon Worldwide Clocks (Empty by default)
   const [foreignClocks, setForeignClocks] = useState(() => {
-    const saved = localStorage.getItem('timora_foreign_clocks_v3');
+    const saved = localStorage.getItem('timora_foreign_clocks_v4');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed.slice(0, 4);
       } catch {}
     }
-    return []; // Empty by default!
+    return []; // Empty by default
   });
 
   const [isAddClockModalOpen, setIsAddClockModalOpen] = useState(false);
@@ -102,10 +103,10 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
 
   // Save clocks to localStorage
   useEffect(() => {
-    localStorage.setItem('timora_foreign_clocks_v3', JSON.stringify(foreignClocks));
+    localStorage.setItem('timora_foreign_clocks_v4', JSON.stringify(foreignClocks));
   }, [foreignClocks]);
 
-  // Weather fetcher from Open-Meteo
+  // Weather fetcher from Open-Meteo for local
   const fetchWeatherForCoords = async (lat, lon, cityName, countryCode = 'in') => {
     try {
       const res = await fetch(
@@ -131,6 +132,35 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
       console.warn('Weather fetch failed:', e);
     }
   };
+
+  // Helper to fetch weather for a foreign city
+  const fetchCityWeather = async (lat, lon) => {
+    try {
+      if (!lat || !lon) return '';
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`
+      );
+      if (!res.ok) return '';
+      const data = await res.json();
+      const cw = data.current_weather;
+      return `${Math.round(cw.temperature)}°C`;
+    } catch {
+      return '';
+    }
+  };
+
+  // Refresh foreign clocks weather on mount
+  useEffect(() => {
+    if (foreignClocks.length === 0) return;
+    foreignClocks.forEach(async (clock) => {
+      if (clock.lat && clock.lon && !clock.temp) {
+        const temp = await fetchCityWeather(clock.lat, clock.lon);
+        if (temp) {
+          setForeignClocks(prev => prev.map(c => c.id === clock.id ? { ...c, temp } : c));
+        }
+      }
+    });
+  }, []);
 
   // Automatic Seamless Local Location & Weather Detection on Mount
   useEffect(() => {
@@ -185,16 +215,24 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
     }
   };
 
-  // Add clock handler (max 4)
-  const handleAddClock = (cityItem) => {
+  // Add clock handler (max 4, with city weather fetched)
+  const handleAddClock = async (cityItem) => {
     if (foreignClocks.length >= 4) return;
+    
+    // Fetch live temperature for this city
+    const cityTemp = await fetchCityWeather(cityItem.lat, cityItem.lon);
+
     const newClock = {
       id: Date.now().toString(),
       label: cityItem.name,
       country: cityItem.country,
       countryCode: cityItem.countryCode || 'un',
-      tz: cityItem.timezone || cityItem.tz || 'UTC'
+      tz: cityItem.timezone || cityItem.tz || 'UTC',
+      lat: cityItem.lat,
+      lon: cityItem.lon,
+      temp: cityTemp
     };
+
     setForeignClocks(prev => [...prev, newClock]);
     setIsAddClockModalOpen(false);
     setClockSearchQuery('');
@@ -244,8 +282,9 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
         </div>
 
         {/* Center: Real-Time Info Bar */}
+        {/* SEQUENCE: 1. Local Time + Weather -> 2. Added City Clocks (with weather) -> 3. Small + Add City Button */}
         <div className="top-info-bar">
-          {/* 1. Local Live Time, Date, Location Name & Weather Combined */}
+          {/* 1. Local Live Time & Weather */}
           <div className="top-widget local-time-widget" title={`Your local live time in ${localPlace}`}>
             <div className="top-widget-title-row">
               <span className="top-widget-time">{localTime}</span>
@@ -258,31 +297,21 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
             </div>
           </div>
 
-          {/* 2. + Add City Clock Button */}
-          {foreignClocks.length < 4 && (
-            <button
-              className="top-widget-add-clock-btn"
-              onClick={() => setIsAddClockModalOpen(true)}
-              title={`Add worldwide city clock (${foreignClocks.length}/4)`}
-            >
-              <Globe2 size={13} color="var(--primary)" />
-              <span>+ Add City Clock</span>
-            </button>
-          )}
-
-          {/* 3. User Selected Worldwide Clocks (Up to 4) */}
+          {/* 2. Added Worldwide Place Clocks (with weather of each particular city) */}
           {foreignClocks.map((clock) => (
-            <div key={clock.id} className="top-widget foreign-clock-widget">
+            <div key={clock.id} className="top-widget foreign-clock-widget" title={`${clock.label}, ${clock.country}`}>
               <div className="top-widget-title-row">
                 <span className="top-widget-time">{getForeignTime(clock.tz)}</span>
                 <CountryFlag countryCode={clock.countryCode} name={clock.country} size="sm" />
               </div>
               <div className="top-widget-sub-row">
-                <span className="top-widget-sub">{clock.label}</span>
+                <span className="top-widget-sub">
+                  {clock.label}{clock.temp ? ` · ${clock.temp}` : ''}
+                </span>
                 <button
                   className="top-widget-remove-btn"
                   onClick={(e) => handleRemoveClock(clock.id, e)}
-                  title="Remove clock"
+                  title={`Remove ${clock.label} clock`}
                   aria-label="Remove clock"
                 >
                   <X size={10} />
@@ -290,6 +319,18 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
               </div>
             </div>
           ))}
+
+          {/* 3. Small + Add City Clock Button (comes AFTER the added cities) */}
+          {foreignClocks.length < 4 && (
+            <button
+              className="top-widget-add-clock-btn small-btn"
+              onClick={() => setIsAddClockModalOpen(true)}
+              title={`Add worldwide city clock (${foreignClocks.length}/4)`}
+            >
+              <Plus size={12} color="var(--primary)" />
+              <span>Add City</span>
+            </button>
+          )}
         </div>
 
         {/* Right: Choose BG & Theme Toggle */}
@@ -317,7 +358,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
       </header>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          ADD WORLDWIDE CLOCK MODAL (Supports Up to 4 Clocks)
+          ADD WORLDWIDE CLOCK MODAL (Supports Up to 4 Clocks with Weather)
          ══════════════════════════════════════════════════════════════════════ */}
       {isAddClockModalOpen && (
         <div className="timora-modal-overlay" onClick={() => setIsAddClockModalOpen(false)}>
@@ -325,7 +366,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
             <div className="timora-modal-header">
               <div className="modal-title-wrap">
                 <Globe2 size={18} color="var(--primary)" />
-                <h3>Add Place Clock ({foreignClocks.length}/4)</h3>
+                <h3>Add Worldwide City Clock ({foreignClocks.length}/4)</h3>
               </div>
               <button className="modal-close-btn" onClick={() => setIsAddClockModalOpen(false)}>
                 <X size={16} />
