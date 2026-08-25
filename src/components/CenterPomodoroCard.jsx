@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   RotateCcw,
-  SkipForward,
   Volume2,
   VolumeX
 } from 'lucide-react';
@@ -139,18 +138,6 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     endTimeRef.current = null;
     setIsRunning(false);
     setSecondsLeft(totalDurationSeconds);
-  };
-
-  const handleSkip = () => {
-    endTimeRef.current = null;
-    setIsRunning(false);
-    if (!selectedPresetId.includes('Break') && selectedPresetId !== 'custom') {
-      const breakPreset = FOCUS_PRESETS.find((p) => p.id === 'shortBreak');
-      if (breakPreset) handleSelectPreset(breakPreset);
-    } else {
-      const workPreset = FOCUS_PRESETS.find((p) => p.id === 'work');
-      if (workPreset) handleSelectPreset(workPreset);
-    }
   };
 
   // Formatted Time for Big Digits
@@ -363,15 +350,11 @@ export default function CenterPomodoroCard({ isDarkMode }) {
         </button>
       </div>
 
-      {/* Secondary Controls */}
+      {/* Secondary Controls - Reset Only */}
       <div className="analog-secondary-controls-row">
-        <button className="analog-ghost-control-btn" onClick={handleReset} title="Reset current session">
+        <button className="analog-ghost-control-btn" onClick={handleReset} title="Reset session">
           <RotateCcw size={13} />
           <span>RESET</span>
-        </button>
-        <button className="analog-ghost-control-btn" onClick={handleSkip} title="Skip to next session">
-          <span>SKIP</span>
-          <SkipForward size={13} />
         </button>
       </div>
     </div>
