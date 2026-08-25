@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
-import { Check, Plus, Trash2 } from 'lucide-react';
-
-const DEFAULT_TASKS = [
-  { id: '1', title: 'Read project requirements', completed: true },
-  { id: '2', title: 'Team standup meeting', completed: true },
-  { id: '3', title: 'Reply to emails', completed: true },
-  { id: '4', title: 'Design homepage wireframe', completed: false },
-];
+import { Check, Plus, Trash2, ListTodo } from 'lucide-react';
 
 export default function CleanTasksCard() {
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('timora_clean_tasks');
-    return saved ? JSON.parse(saved) : DEFAULT_TASKS;
+    const saved = localStorage.getItem('timora_clean_tasks_v2');
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [isAdding, setIsAdding] = useState(false);
@@ -19,7 +12,7 @@ export default function CleanTasksCard() {
 
   const saveTasks = (newTaskList) => {
     setTasks(newTaskList);
-    localStorage.setItem('timora_clean_tasks', JSON.stringify(newTaskList));
+    localStorage.setItem('timora_clean_tasks_v2', JSON.stringify(newTaskList));
   };
 
   const toggleTask = (id) => {
@@ -46,7 +39,14 @@ export default function CleanTasksCard() {
     <div className="clean-tasks-card">
       {/* Header */}
       <div className="clean-tasks-header">
-        <h3 className="clean-tasks-title">Tasks</h3>
+        <div className="clean-tasks-title-wrap">
+          <h3 className="clean-tasks-title">Tasks</h3>
+          {tasks.length > 0 && (
+            <span className="clean-tasks-badge">
+              {tasks.filter(t => t.completed).length}/{tasks.length}
+            </span>
+          )}
+        </div>
         <button 
           className="clean-add-task-btn"
           onClick={() => setIsAdding(!isAdding)}
@@ -73,33 +73,40 @@ export default function CleanTasksCard() {
         </form>
       )}
 
-      {/* Checklist */}
-      <div className="clean-tasks-list">
-        {tasks.map((task) => (
-          <div 
-            key={task.id} 
-            className={`clean-task-row ${task.completed ? 'completed' : ''}`}
-            onClick={() => toggleTask(task.id)}
-          >
-            {/* Square Checkbox */}
-            <div className={`clean-task-checkbox ${task.completed ? 'checked' : ''}`}>
-              {task.completed && <Check size={12} strokeWidth={3} />}
-            </div>
-
-            {/* Title */}
-            <span className="clean-task-label">{task.title}</span>
-
-            {/* Delete */}
-            <button 
-              className="clean-task-del-btn" 
-              onClick={(e) => deleteTask(task.id, e)}
-              title="Delete task"
+      {/* Checklist or Empty State */}
+      {tasks.length === 0 ? (
+        <div className="clean-tasks-empty" onClick={() => setIsAdding(true)}>
+          <ListTodo size={15} color="var(--primary)" />
+          <span>No tasks yet. Click <strong>+ Add Task</strong> to organize your session.</span>
+        </div>
+      ) : (
+        <div className="clean-tasks-list">
+          {tasks.map((task) => (
+            <div 
+              key={task.id} 
+              className={`clean-task-row ${task.completed ? 'completed' : ''}`}
+              onClick={() => toggleTask(task.id)}
             >
-              <Trash2 size={12} />
-            </button>
-          </div>
-        ))}
-      </div>
+              {/* Square Checkbox */}
+              <div className={`clean-task-checkbox ${task.completed ? 'checked' : ''}`}>
+                {task.completed && <Check size={12} strokeWidth={3} />}
+              </div>
+
+              {/* Title */}
+              <span className="clean-task-label">{task.title}</span>
+
+              {/* Delete */}
+              <button 
+                className="clean-task-del-btn" 
+                onClick={(e) => deleteTask(task.id, e)}
+                title="Delete task"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
