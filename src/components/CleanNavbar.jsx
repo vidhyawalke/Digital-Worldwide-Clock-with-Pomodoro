@@ -4,19 +4,11 @@ import {
   Moon, 
   Globe2, 
   X, 
-  CloudSun,
-  Search,
-  MapPin,
-  Navigation,
+  Search, 
   Image as ImageIcon,
   Upload,
   Link as LinkIcon,
-  RotateCcw,
-  CloudRain,
-  CloudLightning,
-  CloudSnow,
-  Cloud,
-  SunMedium
+  RotateCcw
 } from 'lucide-react';
 import ShinyText from './ShinyText';
 import { searchGlobalCitiesAPI } from '../services/citiesApi';
@@ -43,18 +35,7 @@ export function CountryFlag({ countryCode = 'un', name = '', size = 'sm' }) {
   );
 }
 
-// Weather Icon Helper
-function WeatherIcon({ condition = 'Clear', size = 14 }) {
-  const c = condition.toLowerCase();
-  if (c.includes('thunder')) return <CloudLightning size={size} color="var(--primary)" />;
-  if (c.includes('rain') || c.includes('drizzle') || c.includes('shower')) return <CloudRain size={size} color="var(--primary)" />;
-  if (c.includes('snow')) return <CloudSnow size={size} color="var(--primary)" />;
-  if (c.includes('cloud') || c.includes('overcast') || c.includes('fog')) return <Cloud size={size} color="var(--primary)" />;
-  if (c.includes('sun') || c.includes('clear')) return <SunMedium size={size} color="var(--primary)" />;
-  return <CloudSun size={size} color="var(--primary)" />;
-}
-
-// Top Popular Global Hubs
+// Top Popular Global Hubs for Quick Selection
 const POPULAR_HUBS = [
   { name: 'Tokyo', country: 'Japan', countryCode: 'jp', tz: 'Asia/Tokyo', lat: 35.6762, lon: 139.6503 },
   { name: 'London', country: 'United Kingdom', countryCode: 'gb', tz: 'Europe/London', lat: 51.5074, lon: -0.1278 },
@@ -81,43 +62,34 @@ const CURATED_WALLPAPERS = [
 export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, onSelectBg }) {
   const [now, setNow] = useState(new Date());
 
-  // 1. Local City / Area Name
+  // 1. Local Location & Weather Info
   const [localPlace, setLocalPlace] = useState(() => {
     return localStorage.getItem('timora_local_place_name') || 'Local';
   });
 
-  // 2. Weather State
   const [weather, setWeather] = useState({
     temp: '26°C',
     condition: 'Sunny',
-    location: 'Assagao',
     countryCode: 'in'
   });
-  const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
-  const [weatherSearch, setWeatherSearch] = useState('');
-  const [weatherResults, setWeatherResults] = useState([]);
-  const [isLocating, setIsLocating] = useState(false);
-  const [gpsNotice, setGpsNotice] = useState(null);
 
-  // 3. Up to 4 Addon Worldwide Clocks
+  // 2. Up to 4 Addon Worldwide Clocks (Empty by default)
   const [foreignClocks, setForeignClocks] = useState(() => {
-    const saved = localStorage.getItem('timora_foreign_clocks_v2');
+    const saved = localStorage.getItem('timora_foreign_clocks_v3');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, 4);
+        if (Array.isArray(parsed)) return parsed.slice(0, 4);
       } catch {}
     }
-    return [
-      { id: '1', label: 'Tokyo', country: 'Japan', countryCode: 'jp', tz: 'Asia/Tokyo' }
-    ];
+    return []; // Empty by default!
   });
 
   const [isAddClockModalOpen, setIsAddClockModalOpen] = useState(false);
   const [clockSearchQuery, setClockSearchQuery] = useState('');
   const [clockSearchResults, setClockSearchResults] = useState([]);
 
-  // 4. Wallpaper Picker Modal
+  // 3. Wallpaper Picker Modal
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [customBgUrl, setCustomBgUrl] = useState('');
   const fileInputRef = useRef(null);
@@ -130,7 +102,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
 
   // Save clocks to localStorage
   useEffect(() => {
-    localStorage.setItem('timora_foreign_clocks_v2', JSON.stringify(foreignClocks));
+    localStorage.setItem('timora_foreign_clocks_v3', JSON.stringify(foreignClocks));
   }, [foreignClocks]);
 
   // Weather fetcher from Open-Meteo
@@ -143,83 +115,26 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
       const data = await res.json();
       const cw = data.current_weather;
       const wmoMap = { 
-        0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
-        45: 'Foggy', 51: 'Light Drizzle', 61: 'Rain', 71: 'Snow', 80: 'Showers', 95: 'Thunderstorm' 
+        0: 'Clear', 1: 'Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+        45: 'Foggy', 51: 'Drizzle', 61: 'Rain', 71: 'Snow', 80: 'Showers', 95: 'Storm' 
       };
       const cond = wmoMap[cw?.weathercode] || 'Clear';
 
-      const weatherObj = {
+      setWeather({
         temp: `${Math.round(cw.temperature)}°C`,
         condition: cond,
-        location: cityName,
         countryCode: countryCode || 'in'
-      };
-
-      setWeather(weatherObj);
+      });
       setLocalPlace(cityName);
       localStorage.setItem('timora_local_place_name', cityName);
-      localStorage.setItem('timora_weather_location', JSON.stringify({ lat, lon, name: cityName, countryCode }));
     } catch (e) {
       console.warn('Weather fetch failed:', e);
     }
   };
 
-  // Live GPS geolocation request
-  const requestBrowserGeolocation = () => {
-    setIsLocating(true);
-    setGpsNotice(null);
-
-    if (!('geolocation' in navigator)) {
-      setGpsNotice('Geolocation is not supported by your browser.');
-      setIsLocating(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude: lat, longitude: lon } = pos.coords;
-        let detectedCity = 'Local';
-        let detectedCode = 'in';
-        try {
-          const geoRes = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
-          );
-          if (geoRes.ok) {
-            const geoData = await geoRes.json();
-            detectedCity = geoData.city || geoData.locality || geoData.principalSubdivision || 'Local';
-            detectedCode = (geoData.countryCode || 'in').toLowerCase();
-          }
-        } catch {}
-
-        await fetchWeatherForCoords(lat, lon, detectedCity, detectedCode);
-        setIsLocating(false);
-        setIsWeatherModalOpen(false);
-      },
-      (err) => {
-        setIsLocating(false);
-        if (err.code === 1) {
-          setGpsNotice('Location permission was denied. Please allow location via the 🔒 icon in the URL bar, or search any city/village below.');
-        } else {
-          setGpsNotice('Could not detect location. Please search your location below.');
-        }
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  };
-
   // Automatic Seamless Local Location & Weather Detection on Mount
   useEffect(() => {
     const detectAutoLocation = async () => {
-      const saved = localStorage.getItem('timora_weather_location');
-      if (saved) {
-        try {
-          const p = JSON.parse(saved);
-          fetchWeatherForCoords(p.lat, p.lon, p.name, p.countryCode);
-          return;
-        } catch {}
-      }
-
-      // Automatically detect IP client location
       try {
         const geoRes = await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en');
         if (geoRes.ok) {
@@ -239,19 +154,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
 
     detectAutoLocation();
   }, []);
-
-  // Weather place search debounced
-  useEffect(() => {
-    if (!weatherSearch.trim() || weatherSearch.length < 2) {
-      setWeatherResults([]);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      const res = await searchGlobalCitiesAPI(weatherSearch);
-      setWeatherResults(res);
-    }, 280);
-    return () => clearTimeout(timer);
-  }, [weatherSearch]);
 
   // World clock search debounced
   useEffect(() => {
@@ -342,38 +244,33 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
         </div>
 
         {/* Center: Real-Time Info Bar */}
-        {/* ORDER: 1. Local Time Block -> 2. + Add City Clock / Added Clocks -> 3. Weather Block */}
         <div className="top-info-bar">
-          {/* 1. Local Time & Date Block */}
-          <div 
-            className="top-widget local-time-widget clickable-widget" 
-            onClick={() => setIsWeatherModalOpen(true)}
-            title="Your local live time and location (Click to change location)"
-            role="button"
-            tabIndex={0}
-          >
+          {/* 1. Local Live Time, Date, Location Name & Weather Combined */}
+          <div className="top-widget local-time-widget" title={`Your local live time in ${localPlace}`}>
             <div className="top-widget-title-row">
               <span className="top-widget-time">{localTime}</span>
               <CountryFlag countryCode={weather.countryCode || 'in'} name={localPlace} size="sm" />
             </div>
             <div className="top-widget-sub-row">
-              <span className="top-widget-sub">{localDate} · {localPlace}</span>
+              <span className="top-widget-sub">
+                {localDate} · {localPlace} · {weather.temp} {weather.condition}
+              </span>
             </div>
           </div>
 
-          {/* 2. + Add City Clock Button (placed right after Local Time) */}
+          {/* 2. + Add City Clock Button */}
           {foreignClocks.length < 4 && (
             <button
               className="top-widget-add-clock-btn"
               onClick={() => setIsAddClockModalOpen(true)}
-              title={`Add worldwide city or place clock (${foreignClocks.length}/4)`}
+              title={`Add worldwide city clock (${foreignClocks.length}/4)`}
             >
               <Globe2 size={13} color="var(--primary)" />
               <span>+ Add City Clock</span>
             </button>
           )}
 
-          {/* 3. Up to 4 Added Place Clocks */}
+          {/* 3. User Selected Worldwide Clocks (Up to 4) */}
           {foreignClocks.map((clock) => (
             <div key={clock.id} className="top-widget foreign-clock-widget">
               <div className="top-widget-title-row">
@@ -393,23 +290,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
               </div>
             </div>
           ))}
-
-          {/* 4. Live Weather Block */}
-          <div 
-            className="top-widget weather-widget-top clickable-widget"
-            onClick={() => setIsWeatherModalOpen(true)}
-            title="Live weather forecast (Click to search any village, city or use GPS)"
-            role="button"
-            tabIndex={0}
-          >
-            <div className="top-widget-title-row">
-              <span className="top-widget-time">{weather.temp}</span>
-              <WeatherIcon condition={weather.condition} size={14} />
-            </div>
-            <div className="top-widget-sub-row">
-              <span className="top-widget-sub">{weather.condition} · {weather.location}</span>
-            </div>
-          </div>
         </div>
 
         {/* Right: Choose BG & Theme Toggle */}
@@ -435,104 +315,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
           </button>
         </div>
       </header>
-
-      {/* ══════════════════════════════════════════════════════════════════════
-          WEATHER LOCATION MODAL (Places API + GPS)
-         ══════════════════════════════════════════════════════════════════════ */}
-      {isWeatherModalOpen && (
-        <div className="timora-modal-overlay" onClick={() => setIsWeatherModalOpen(false)}>
-          <div className="timora-modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="timora-modal-header">
-              <div className="modal-title-wrap">
-                <MapPin size={18} color="var(--primary)" />
-                <h3>Local Location & Forecast</h3>
-              </div>
-              <button className="modal-close-btn" onClick={() => setIsWeatherModalOpen(false)}>
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="timora-modal-body">
-              <button 
-                className="modal-gps-btn"
-                onClick={requestBrowserGeolocation}
-                disabled={isLocating}
-              >
-                <Navigation size={15} className={isLocating ? 'spin-anim' : ''} />
-                <span>{isLocating ? 'Detecting Location...' : 'Detect My Live GPS Location'}</span>
-              </button>
-
-              {gpsNotice && (
-                <div className="modal-gps-notice">
-                  <p>{gpsNotice}</p>
-                </div>
-              )}
-
-              <div className="modal-divider">
-                <span>OR SEARCH ANY PLACE / VILLAGE / CITY</span>
-              </div>
-
-              <div className="modal-search-input-wrap">
-                <Search size={14} className="search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search your city, town or village (e.g. Assagao, London, Mumbai)..."
-                  value={weatherSearch}
-                  onChange={(e) => setWeatherSearch(e.target.value)}
-                  autoFocus
-                />
-                {weatherSearch && (
-                  <button className="search-clear-btn" onClick={() => setWeatherSearch('')}>
-                    <X size={12} />
-                  </button>
-                )}
-              </div>
-
-              {weatherResults.length > 0 ? (
-                <div className="modal-city-list">
-                  {weatherResults.map((item) => (
-                    <button
-                      key={item.id}
-                      className="modal-city-item"
-                      onClick={() => {
-                        fetchWeatherForCoords(item.lat, item.lon, item.name, item.countryCode);
-                        setIsWeatherModalOpen(false);
-                        setWeatherSearch('');
-                      }}
-                    >
-                      <CountryFlag countryCode={item.countryCode} name={item.country} size="md" />
-                      <div className="city-item-info">
-                        <span className="city-item-name">{item.name}</span>
-                        <span className="city-item-country">{item.admin1 ? `${item.admin1}, ` : ''}{item.country}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="modal-presets-section">
-                  <span className="presets-label">Popular Places:</span>
-                  <div className="modal-preset-grid">
-                    {POPULAR_HUBS.map((hub) => (
-                      <button
-                        key={hub.name}
-                        className="modal-preset-chip"
-                        onClick={() => {
-                          fetchWeatherForCoords(hub.lat, hub.lon, hub.name, hub.countryCode);
-                          setIsWeatherModalOpen(false);
-                          setWeatherSearch('');
-                        }}
-                      >
-                        <CountryFlag countryCode={hub.countryCode} name={hub.name} size="sm" />
-                        <span className="preset-chip-name">{hub.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ══════════════════════════════════════════════════════════════════════
           ADD WORLDWIDE CLOCK MODAL (Supports Up to 4 Clocks)
