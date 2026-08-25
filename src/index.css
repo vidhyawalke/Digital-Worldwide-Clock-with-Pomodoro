@@ -598,6 +598,24 @@ input, select {
   z-index: 2;
 }
 
+.analog-user-session-col {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.analog-session-tag {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(208, 90, 63, 0.25);
+}
+
 .analog-status-pill {
   display: inline-flex;
   align-items: center;
