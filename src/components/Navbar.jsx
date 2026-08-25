@@ -1,129 +1,153 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Clock, 
+  Sun, 
+  Moon, 
+  ChevronDown, 
   Timer, 
-  LayoutDashboard, 
-  Hourglass, 
-  Image as ImageIcon,
+  Globe2, 
+  PlaySquare, 
+  BarChart3, 
+  BookOpen,
+  Sparkles,
   Download,
-  Maximize,
-  Minimize
+  Image as ImageIcon,
+  CheckCircle2
 } from 'lucide-react';
-import timoraLogo from '../assets/timora-logo.jpg';
 
 export default function Navbar({ 
   currentTab, 
   setCurrentTab, 
-  is24Hour, 
-  setIs24Hour, 
+  isDarkMode, 
+  setIsDarkMode,
+  onOpenAnalytics,
+  onOpenMethod,
   onOpenBackgroundPicker,
-  onOpenInstallModal,
-  onOpenShortcutsModal
+  onOpenInstallModal
 }) {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-        setIsFullscreen(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
-  }, []);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   return (
-    <header className="navbar">
-      {/* Brand Logo */}
-      <div className="logo-group">
-        <img 
-          src={timoraLogo} 
-          alt="Timora Logo" 
-          className="brand-logo-img" 
-        />
-        <div className="logo-text">
-          <h1>Timora</h1>
-          <span>Focus. Time. Anywhere.</span>
+    <header className="timora-top-navbar">
+      {/* ── Brand Logo ── */}
+      <div className="timora-brand-group" onClick={() => setCurrentTab('dashboard')}>
+        <div className="timora-logo-mark">
+          {/* Stylized circle & rays icon */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="var(--primary)" strokeWidth="2.5" />
+            <circle cx="12" cy="12" r="3.5" fill="var(--primary)" />
+            <line x1="12" y1="3" x2="12" y2="6" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+            <line x1="12" y1="18" x2="12" y2="21" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+            <line x1="3" y1="12" x2="6" y2="12" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+            <line x1="18" y1="12" x2="21" y2="12" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+          </svg>
         </div>
+        <span className="timora-brand-name">Timora</span>
       </div>
 
-      {/* Main Navigation Tabs */}
-      <nav className="nav-tabs">
+      {/* ── Center Nav Tabs (Timer, World Clock, YouTube, Analytics, Method) ── */}
+      <nav className="timora-center-nav">
         <button
-          className={`tab-btn ${currentTab === 'dashboard' ? 'active' : ''}`}
+          className={`nav-pill-btn ${currentTab === 'dashboard' ? 'active' : ''}`}
           onClick={() => setCurrentTab('dashboard')}
-          title="Dashboard View (Press 1)"
         >
-          <LayoutDashboard size={16} />
-          <span>Dashboard</span>
+          <span>Timer</span>
         </button>
 
         <button
-          className={`tab-btn ${currentTab === 'clock' ? 'active' : ''}`}
-          onClick={() => setCurrentTab('clock')}
-          title="World Clock Focus (Press 2)"
+          className={`nav-pill-btn ${currentTab === 'worldClock' ? 'active' : ''}`}
+          onClick={() => setCurrentTab('worldClock')}
         >
-          <Clock size={16} />
           <span>World Clock</span>
         </button>
 
         <button
-          className={`tab-btn ${currentTab === 'pomodoro' ? 'active' : ''}`}
-          onClick={() => setCurrentTab('pomodoro')}
-          title="Pomodoro Timer (Press 3)"
+          className={`nav-pill-btn ${currentTab === 'youtube' ? 'active' : ''}`}
+          onClick={() => setCurrentTab('youtube')}
         >
-          <Timer size={16} />
-          <span>Pomodoro</span>
+          <span>YouTube</span>
+        </button>
+
+        <button
+          className={`nav-pill-btn ${currentTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => {
+            onOpenAnalytics();
+          }}
+        >
+          <span>Analytics</span>
+        </button>
+
+        <button
+          className="nav-pill-btn"
+          onClick={() => {
+            onOpenMethod();
+          }}
+        >
+          <span>Method</span>
         </button>
       </nav>
 
-      {/* Controls */}
-      <div className="nav-controls">
+      {/* ── Right Action Controls ── */}
+      <div className="timora-right-actions">
+        {/* Theme Toggle (Sun/Moon) */}
         <button 
-          className="control-btn"
-          onClick={() => setIs24Hour(!is24Hour)}
-          title="Switch 12h / 24h format"
+          className="nav-icon-action-btn"
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          title={isDarkMode ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
         >
-          <Hourglass size={15} />
-          <span>{is24Hour ? '24 Hour' : '12 Hour'}</span>
+          {isDarkMode ? <Sun size={17} /> : <Sun size={17} />}
         </button>
 
-        <button 
-          className="control-btn"
-          onClick={onOpenBackgroundPicker}
-          title="Change background wallpaper (Press B)"
-        >
-          <ImageIcon size={15} />
-          <span>Background</span>
-        </button>
+        {/* User Profile Avatar Pill with Dropdown */}
+        <div className="profile-pill-wrapper">
+          <button 
+            className="user-profile-pill"
+            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+          >
+            <div className="profile-avatar-circle">V</div>
+            <ChevronDown size={14} color="var(--text-muted)" />
+          </button>
 
-        <button 
-          className="control-btn download-app-btn"
-          onClick={onOpenInstallModal}
-          title="Download Timora as Desktop App (Press D)"
-        >
-          <Download size={15} />
-          <span>Download App</span>
-        </button>
+          {showProfileDropdown && (
+            <div className="profile-dropdown-popup" onClick={(e) => e.stopPropagation()}>
+              <div className="profile-dropdown-user-info">
+                <div className="profile-avatar-circle lg">V</div>
+                <div>
+                  <div className="user-name">Vidhya Walke</div>
+                  <div className="user-email">vidhya@gmail.com</div>
+                </div>
+              </div>
+              <div className="dropdown-divider"></div>
+              
+              <button 
+                className="profile-menu-item"
+                onClick={() => {
+                  onOpenBackgroundPicker();
+                  setShowProfileDropdown(false);
+                }}
+              >
+                <ImageIcon size={14} color="var(--primary)" />
+                <span>Change Wallpaper / Theme</span>
+              </button>
 
-        <button 
-          className="control-btn"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? 'Exit Fullscreen (Press F)' : 'Fullscreen (Press F)'}
-        >
-          {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
-          <span>{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
-        </button>
+              <button 
+                className="profile-menu-item"
+                onClick={() => {
+                  onOpenInstallModal();
+                  setShowProfileDropdown(false);
+                }}
+              >
+                <Download size={14} color="var(--primary)" />
+                <span>Install Desktop App</span>
+              </button>
+
+              <div className="dropdown-divider"></div>
+              <div className="profile-menu-item synced-status">
+                <CheckCircle2 size={14} color="#386641" />
+                <span>Google Cloud Sync Active</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
