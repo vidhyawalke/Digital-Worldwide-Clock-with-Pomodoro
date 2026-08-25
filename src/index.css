@@ -1631,3 +1631,57 @@ body.dark-mode .timora-clean-navbar {
   color: var(--text-muted);
   background: var(--primary-subtle);
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   TASK EDIT & DELETE ACTION BUTTONS
+   ────────────────────────────────────────────────────────────────────────── */
+.clean-task-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.clean-task-row:hover .clean-task-actions {
+  opacity: 1;
+}
+
+.clean-task-action-btn {
+  color: var(--text-dim);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.12s ease;
+}
+
+.clean-task-action-btn:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.clean-task-action-btn.delete:hover {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.clean-task-edit-form {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.clean-task-edit-form input {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--primary-border);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 0.8rem;
+}

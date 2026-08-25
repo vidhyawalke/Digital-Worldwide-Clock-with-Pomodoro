@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Plus, Trash2, ListTodo } from 'lucide-react';
+import { Check, Plus, Trash2, Pencil, ListTodo, X } from 'lucide-react';
 
 export default function CleanTasksCard() {
   const [tasks, setTasks] = useState(() => {
@@ -10,12 +10,17 @@ export default function CleanTasksCard() {
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
 
+  // Inline edit state
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingText, setEditingText] = useState('');
+
   const saveTasks = (newTaskList) => {
     setTasks(newTaskList);
     localStorage.setItem('timora_clean_tasks_v2', JSON.stringify(newTaskList));
   };
 
   const toggleTask = (id) => {
+    if (editingTaskId === id) return;
     const updated = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
     saveTasks(updated);
   };
@@ -29,10 +34,28 @@ export default function CleanTasksCard() {
     setIsAdding(false);
   };
 
+  const handleStartEdit = (task, e) => {
+    e.stopPropagation();
+    setEditingTaskId(task.id);
+    setEditingText(task.title);
+  };
+
+  const handleSaveEdit = (taskId, e) => {
+    e?.preventDefault();
+    if (!editingText.trim()) return;
+    const updated = tasks.map(t => t.id === taskId ? { ...t, title: editingText.trim() } : t);
+    saveTasks(updated);
+    setEditingTaskId(null);
+    setEditingText('');
+  };
+
   const deleteTask = (id, e) => {
     e.stopPropagation();
     const updated = tasks.filter(t => t.id !== id);
     saveTasks(updated);
+    if (editingTaskId === id) {
+      setEditingTaskId(null);
+    }
   };
 
   return (
@@ -84,7 +107,7 @@ export default function CleanTasksCard() {
           {tasks.map((task) => (
             <div 
               key={task.id} 
-              className={`clean-task-row ${task.completed ? 'completed' : ''}`}
+              className={`clean-task-row ${task.completed ? 'completed' : ''} ${editingTaskId === task.id ? 'editing' : ''}`}
               onClick={() => toggleTask(task.id)}
             >
               {/* Square Checkbox */}
@@ -92,17 +115,59 @@ export default function CleanTasksCard() {
                 {task.completed && <Check size={12} strokeWidth={3} />}
               </div>
 
-              {/* Title */}
-              <span className="clean-task-label">{task.title}</span>
+              {/* Title / Inline Edit Form */}
+              {editingTaskId === task.id ? (
+                <form 
+                  onSubmit={(e) => handleSaveEdit(task.id, e)} 
+                  className="clean-task-edit-form"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    type="text"
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') setEditingTaskId(null);
+                    }}
+                  />
+                  <button type="submit" className="clean-task-action-btn save" title="Save">
+                    <Check size={12} />
+                  </button>
+                  <button 
+                    type="button" 
+                    className="clean-task-action-btn cancel" 
+                    onClick={() => setEditingTaskId(null)}
+                    title="Cancel"
+                  >
+                    <X size={12} />
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <span className="clean-task-label">{task.title}</span>
 
-              {/* Delete */}
-              <button 
-                className="clean-task-del-btn" 
-                onClick={(e) => deleteTask(task.id, e)}
-                title="Delete task"
-              >
-                <Trash2 size={12} />
-              </button>
+                  {/* Actions (Pencil Edit & Trash Delete) */}
+                  <div className="clean-task-actions">
+                    <button 
+                      className="clean-task-action-btn edit" 
+                      onClick={(e) => handleStartEdit(task, e)}
+                      title="Edit task"
+                      aria-label="Edit task"
+                    >
+                      <Pencil size={12} />
+                    </button>
+                    <button 
+                      className="clean-task-action-btn delete" 
+                      onClick={(e) => deleteTask(task.id, e)}
+                      title="Delete task"
+                      aria-label="Delete task"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>
