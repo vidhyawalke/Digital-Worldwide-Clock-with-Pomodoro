@@ -5,17 +5,26 @@
 :root {
   /* Clean Palette */
   --bg-app: #FAF8F5;
-  --bg-card: #FFFFFF;
-  --bg-card-subtle: #FAF7F2;
-  --bg-input: #F6F3ED;
-  --border-color: #EAE4DA;
-  --border-light: #F2ECE2;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --bg-card-subtle: rgba(255, 255, 255, 0.52);
+  --bg-input: rgba(246, 243, 237, 0.75);
+  --border-color: rgba(255, 255, 255, 0.85);
+  --border-light: rgba(235, 229, 220, 0.65);
+  
+  /* Glassmorphism Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.55);
+  --glass-bg-card: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.9);
+  --glass-border-subtle: rgba(235, 229, 220, 0.7);
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 29, 27, 0.06), 0 2px 8px 0 rgba(31, 29, 27, 0.03);
   
   /* Primary Terracotta / Tomato Accent */
   --primary: #D05A3F;
   --primary-hover: #B84A30;
-  --primary-light: #F8EBE4;
-  --primary-glow: rgba(208, 90, 63, 0.16);
+  --primary-light: rgba(208, 90, 63, 0.12);
+  --primary-glow: rgba(208, 90, 63, 0.22);
   
   /* Support Colors */
   --text-main: #1F1D1B;
@@ -35,28 +44,37 @@
   --radius-full: 9999px;
   
   --shadow-sm: 0 1px 3px rgba(30, 25, 20, 0.03);
-  --shadow-card: 0 2px 12px rgba(30, 25, 20, 0.03), 0 1px 2px rgba(30, 25, 20, 0.02);
+  --shadow-card: var(--glass-shadow);
 }
 
 /* Dark Mode Overrides */
 .timora-app-root.theme-dark {
   --bg-app: #12100E;
-  --bg-card: #1A1715;
-  --bg-card-subtle: #221F1C;
-  --bg-input: #272320;
-  --border-color: #2D2722;
-  --border-light: #36302A;
+  --bg-card: rgba(26, 23, 21, 0.78);
+  --bg-card-subtle: rgba(34, 31, 28, 0.6);
+  --bg-input: rgba(39, 35, 32, 0.75);
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-light: rgba(255, 255, 255, 0.08);
+  
+  /* Glassmorphism Tokens (Dark) */
+  --glass-bg: rgba(26, 23, 21, 0.78);
+  --glass-bg-subtle: rgba(34, 31, 28, 0.6);
+  --glass-bg-card: rgba(26, 23, 21, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45), 0 2px 8px 0 rgba(0, 0, 0, 0.25);
   
   --primary: #E26D4B;
   --primary-hover: #EE7A58;
-  --primary-light: rgba(226, 109, 75, 0.18);
+  --primary-light: rgba(226, 109, 75, 0.2);
   
   --text-main: #FBF9F5;
   --text-body: #D6D0C7;
   --text-muted: #9E968D;
   --text-dim: #6E675F;
   
-  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-card: var(--glass-shadow);
 }
 
 /* Reset */
@@ -129,6 +147,22 @@ input, select {
   transition: all 0.15s ease;
 }
 
+.sidebar-window-toggle-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
 .sidebar-window-toggle-btn:hover {
   color: var(--primary);
   border-color: var(--primary);
@@ -154,8 +188,11 @@ input, select {
   gap: 0.45rem;
   padding: 0.4rem 0.85rem;
   border-radius: var(--radius-full);
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-body);
@@ -186,10 +223,12 @@ input, select {
 .timora-sliding-sidebar {
   width: 235px;
   flex-shrink: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow);
   transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.25s ease,
@@ -298,8 +337,10 @@ input, select {
 
 /* Mini Calendar Widget */
 .sidebar-calendar-widget {
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-light);
+  background: var(--glass-bg-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border-subtle);
   border-radius: var(--radius-md);
   padding: 0.85rem 0.75rem;
 }
@@ -373,8 +414,10 @@ input, select {
 
 /* Today's Focus Card */
 .sidebar-focus-stats-card {
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-light);
+  background: var(--glass-bg-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border-subtle);
   border-radius: var(--radius-md);
   padding: 0.85rem;
   display: flex;
@@ -418,8 +461,10 @@ input, select {
 
 /* Signed in with Google Card */
 .sidebar-google-card {
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-light);
+  background: var(--glass-bg-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border-subtle);
   border-radius: var(--radius-md);
   padding: 0.75rem;
   display: flex;
@@ -502,10 +547,12 @@ input, select {
    4. CENTER POMODORO CARD (Tomato Icon, Countdown Ring, Session Dots)
    ────────────────────────────────────────────────────────────────────────── */
 .clean-center-pomodoro-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow);
   padding: 1.5rem 1.75rem;
   display: flex;
   flex-direction: column;
@@ -515,7 +562,10 @@ input, select {
 .clean-pomo-tabs-header {
   display: flex;
   align-items: center;
-  background: var(--bg-input);
+  background: var(--glass-bg-subtle);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border-subtle);
   padding: 0.3rem;
   border-radius: var(--radius-md);
   margin-bottom: 1.75rem;
@@ -621,8 +671,10 @@ input, select {
   gap: 0.45rem;
   padding: 0.6rem 1.15rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-subtle);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--text-body);
   font-size: 0.85rem;
   font-weight: 600;
@@ -690,10 +742,12 @@ input, select {
    5. TASKS CARD
    ────────────────────────────────────────────────────────────────────────── */
 .clean-tasks-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow);
   padding: 1.35rem 1.5rem;
   display: flex;
   flex-direction: column;
@@ -821,10 +875,12 @@ input, select {
    6. RIGHT COLUMN WIDGETS (World Clock, Weather, YouTube)
    ────────────────────────────────────────────────────────────────────────── */
 .clean-right-widget-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow);
   padding: 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
@@ -1081,10 +1137,12 @@ input, select {
 }
 
 .modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--glass-bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--glass-shadow);
   width: 100%;
   max-width: 650px;
   overflow: hidden;
