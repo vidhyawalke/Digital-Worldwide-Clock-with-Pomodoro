@@ -1,100 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import DigitalClock from './components/DigitalClock';
+import CleanNavbar from './components/CleanNavbar';
+import SlidingSidebar from './components/SlidingSidebar';
+import CenterPomodoroCard from './components/CenterPomodoroCard';
+import CleanTasksCard from './components/CleanTasksCard';
+import CleanWorldClockCard from './components/CleanWorldClockCard';
+import CleanWeatherCard from './components/CleanWeatherCard';
+import CleanYouTubeCard from './components/CleanYouTubeCard';
 import WorldClock from './components/WorldClock';
-import Pomodoro from './components/Pomodoro';
-import WeatherWidget from './components/WeatherWidget';
 import YouTubePlayer from './components/YouTubePlayer';
+import DailyReportModal from './components/DailyReportModal';
+import MethodModal from './components/MethodModal';
 import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
 import ShortcutsModal from './components/ShortcutsModal';
-import { WALLPAPER_CATEGORIES } from './data/wallpapers';
-
-// Helper to calculate if a background color is dark or light
-function isColorDark(hexColor) {
-  if (!hexColor || typeof hexColor !== 'string') return true;
-  const hex = hexColor.replace('#', '');
-  if (hex.length < 6) return true;
-  const r = parseInt(hex.substring(0, 2), 16) || 0;
-  const g = parseInt(hex.substring(2, 4), 16) || 0;
-  const b = parseInt(hex.substring(4, 6), 16) || 0;
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness < 140;
-}
+import ShinyText from './components/ShinyText';
+import GoogleAuthModal from './components/GoogleAuthModal';
 
 export default function App() {
-  // 1. Current active view tab: 'dashboard' | 'clock' | 'pomodoro'
-  const [currentTab, setCurrentTab] = useState('dashboard');
+  // 1. Sliding Sidebar Open/Close Window state (default open, sliding window)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('timora_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
-  // 2. 12-hour vs 24-hour display format preference
-  const [is24Hour, setIs24Hour] = useState(() => {
-    const saved = localStorage.getItem('is24Hour_pref');
+  // 2. Google User State
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('google_user');
+    return saved ? JSON.parse(saved) : { name: 'Vidhya Walke', email: 'vidhya@gmail.com' };
+  });
+
+  // 3. Active Tab: 'timer' | 'tasks' | 'worldClock' | 'youtube'
+  const [currentTab, setCurrentTab] = useState('timer');
+
+  // 4. Theme Mode (Light by default as shown in image)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('timora_dark_mode');
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 3. Wallpaper Background Customizer
-  const [isBgPickerOpen, setIsBgPickerOpen] = useState(false);
+  // 5. Custom Wallpaper Background
   const [currentWallpaper, setCurrentWallpaper] = useState(() => {
     const saved = localStorage.getItem('app_wallpaper');
     return saved ? JSON.parse(saved) : null;
   });
-  const [isDailyRefresh, setIsDailyRefresh] = useState(() => {
-    const saved = localStorage.getItem('daily_refresh_pref');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
 
-  // 4. Modals: Install & Shortcuts
+  // 6. Modals State
+  const [isDailyReportOpen, setIsDailyReportOpen] = useState(false);
+  const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
+  const [isBgPickerOpen, setIsBgPickerOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
-  // Catch PWA beforeinstallprompt event for desktop app download
+  // 6. Stats
+  const [stats, setStats] = useState(() => {
+    const saved = localStorage.getItem('pomodoro_stats');
+    return saved ? JSON.parse(saved) : { completedToday: 4, totalMinutes: 100, streak: 12 };
+  });
+
+  // Save preferences
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
+    localStorage.setItem('timora_sidebar_open', JSON.stringify(isSidebarOpen));
+  }, [isSidebarOpen]);
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
-
-  // Global Keyboard Shortcuts
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
-        return;
-      }
-
-      if (e.key === '1') {
-        setCurrentTab('dashboard');
-      } else if (e.key === '2') {
-        setCurrentTab('clock');
-      } else if (e.key === '3') {
-        setCurrentTab('pomodoro');
-      } else if (e.key.toLowerCase() === 'b') {
-        setIsBgPickerOpen(prev => !prev);
-      } else if (e.key.toLowerCase() === 'd') {
-        setIsInstallModalOpen(prev => !prev);
-      } else if (e.key === '?') {
-        setIsShortcutsModalOpen(prev => !prev);
-      } else if (e.key.toLowerCase() === 'f') {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(() => {});
-        } else {
-          if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Save preferences to localStorage
-  useEffect(() => {
-    localStorage.setItem('is24Hour_pref', JSON.stringify(is24Hour));
-  }, [is24Hour]);
+    localStorage.setItem('timora_dark_mode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
 
   useEffect(() => {
     if (currentWallpaper) {
@@ -105,185 +77,247 @@ export default function App() {
   }, [currentWallpaper]);
 
   useEffect(() => {
-    localStorage.setItem('daily_refresh_pref', JSON.stringify(isDailyRefresh));
-  }, [isDailyRefresh]);
+    localStorage.setItem('pomodoro_stats', JSON.stringify(stats));
+  }, [stats]);
 
-  // Handle daily refresh wallpaper rotation on mount
-  useEffect(() => {
-    if (isDailyRefresh) {
-      const imageCategories = WALLPAPER_CATEGORIES.filter(c => c.type !== 'color');
-      const randomCategory = imageCategories[Math.floor(Math.random() * imageCategories.length)];
-      const randomItem = randomCategory.items[Math.floor(Math.random() * randomCategory.items.length)];
-      setCurrentWallpaper(randomItem);
-    }
-  }, [isDailyRefresh]);
-
-  // Dynamic Background Style
+  // Dynamic Background Wallpaper Style
   const getAppBackgroundStyle = () => {
     if (!currentWallpaper) return {};
-
     if (currentWallpaper.isColor) {
       return {
         backgroundColor: currentWallpaper.value,
         backgroundImage: 'none',
       };
     }
-
     if (currentWallpaper.url) {
+      const overlay = isDarkMode
+        ? 'linear-gradient(rgba(18, 16, 14, 0.78), rgba(18, 16, 14, 0.88))'
+        : 'linear-gradient(rgba(250, 248, 245, 0.78), rgba(250, 248, 245, 0.88))';
       return {
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.38)), url(${currentWallpaper.url})`,
+        backgroundImage: `${overlay}, url(${currentWallpaper.url})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
       };
     }
-
     return {};
   };
 
-  const getThemeClass = () => {
-    if (!currentWallpaper) return 'theme-default';
-    if (currentWallpaper.isColor) {
-      return isColorDark(currentWallpaper.value) ? 'theme-solid-dark' : 'theme-solid-light';
-    }
-    if (currentWallpaper.url) {
-      return 'theme-image-wallpaper';
-    }
-    return 'theme-default';
+  // PWA install prompt
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  // Keyboard Shortcuts: `[` toggles sliding sidebar window
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+      if (e.key === '[') {
+        setIsSidebarOpen(prev => !prev);
+      } else if (e.key === '1') {
+        setCurrentTab('timer');
+      } else if (e.key === '2') {
+        setCurrentTab('worldClock');
+      } else if (e.key === '3') {
+        setCurrentTab('youtube');
+      } else if (e.key.toLowerCase() === 'b') {
+        setIsBgPickerOpen(prev => !prev);
+      } else if (e.key === '?') {
+        setIsShortcutsModalOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleSessionComplete = (minutes) => {
+    setStats(prev => ({
+      ...prev,
+      completedToday: prev.completedToday + 1,
+      totalMinutes: prev.totalMinutes + minutes,
+      streak: prev.streak + 1
+    }));
   };
 
-  const handleSelectWallpaper = (wallpaper) => {
-    setCurrentWallpaper(wallpaper);
+  const handleTimeTracked = (seconds) => {
+    // tracking
   };
 
-  const handleResetDefaultBackground = () => {
-    setCurrentWallpaper(null);
-    setIsDailyRefresh(false);
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('google_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('google_user');
+    }
+  }, [user]);
+
+  const handleGoogleSignIn = (newUser) => {
+    setUser(newUser);
+  };
+
+  const handleGoogleSignOut = () => {
+    setUser(null);
   };
 
   return (
-    <div className={`app-root-bg ${getThemeClass()}`} style={getAppBackgroundStyle()}>
-      <div className="app-wrapper">
-        {/* Top Navigation Bar */}
-        <Navbar
+    <div 
+      className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}
+      style={getAppBackgroundStyle()}
+    >
+      {/* Top Navbar */}
+      <CleanNavbar
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
+      />
+
+      {/* Main Workspace Frame with Sliding Window Layout */}
+      <div className={`timora-workspace-layout ${isSidebarOpen ? 'sidebar-visible' : 'sidebar-hidden'}`}>
+        {/* Left Sliding Sidebar Panel */}
+        <SlidingSidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(prev => !prev)}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
-          is24Hour={is24Hour}
-          setIs24Hour={setIs24Hour}
-          onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
-          onOpenInstallModal={() => setIsInstallModalOpen(true)}
-          onOpenShortcutsModal={() => setIsShortcutsModalOpen(true)}
+          completedSessions={stats.completedToday}
+          totalTargetSessions={8}
+          onOpenSettings={() => setIsBgPickerOpen(true)}
+          onOpenAnalytics={() => setIsDailyReportOpen(true)}
+          user={user}
+          onOpenGoogleAuth={() => setIsGoogleAuthOpen(true)}
+          onSignOut={handleGoogleSignOut}
         />
 
-        <main>
-          {/* Main Digital Clock Banner (Only on Dashboard & World Clock tabs) */}
-          {currentTab !== 'pomodoro' && (
-            <DigitalClock is24Hour={is24Hour} />
-          )}
-
-          {/* Tab 1: Combined High-Efficiency Dashboard */}
-          {currentTab === 'dashboard' && (
-            <div className="dashboard-grid">
-              {/* Left Column: World Clock & Live Weather */}
-              <div className="dashboard-col">
-                <WorldClock is24Hour={is24Hour} />
-                <WeatherWidget />
+        {/* Center & Right Main Content Area */}
+        <main className="timora-main-content-window">
+          {/* Main Dashboard / Timer View */}
+          {currentTab === 'timer' && (
+            <div className="timora-two-column-stage">
+              {/* Center Column: Big Pomodoro Card + Tasks Card */}
+              <div className="stage-center-column">
+                <CenterPomodoroCard
+                  onSessionComplete={handleSessionComplete}
+                  onTimeTracked={handleTimeTracked}
+                />
+                <CleanTasksCard />
               </div>
 
-              {/* Right Column: Pomodoro Focus Station & YouTube Study Music */}
-              <div className="dashboard-col">
-                <Pomodoro />
-                <YouTubePlayer />
+              {/* Right Column: World Clock, Weather, YouTube Study Player */}
+              <div className="stage-right-column">
+                <CleanWorldClockCard 
+                  onOpenFullWorldClock={() => setCurrentTab('worldClock')}
+                />
+                <CleanWeatherCard />
+                <CleanYouTubeCard />
               </div>
             </div>
           )}
 
-          {/* Tab 2: Dedicated World Clock View */}
-          {currentTab === 'clock' && (
-            <div className="clock-view-layout">
-              <div className="world-clock-main-col">
-                <WorldClock is24Hour={is24Hour} />
+          {/* Tasks Full View */}
+          {currentTab === 'tasks' && (
+            <div className="tab-full-view-container">
+              <div className="view-header-bar">
+                <button className="back-link-btn" onClick={() => setCurrentTab('timer')}>
+                  &larr; Back to Dashboard
+                </button>
+                <h2>Daily Tasks & Goals</h2>
               </div>
-              <div className="world-clock-side-col">
-                <WeatherWidget />
+              <div style={{ maxWidth: '750px', margin: '0 auto' }}>
+                <CleanTasksCard />
               </div>
             </div>
           )}
 
-          {/* Tab 3: Dedicated Pure Pomodoro Focus Screen (Strictly Pomodoro) */}
-          {currentTab === 'pomodoro' && (
-            <div className="pomodoro-view-layout">
-              <div className="pomodoro-focus-container">
-                <Pomodoro />
-                <div style={{ marginTop: '1.25rem' }}>
-                  <YouTubePlayer />
-                </div>
+          {/* Full World Clock View */}
+          {currentTab === 'worldClock' && (
+            <div className="tab-full-view-container">
+              <div className="view-header-bar">
+                <button className="back-link-btn" onClick={() => setCurrentTab('timer')}>
+                  &larr; Back to Dashboard
+                </button>
+                <h2>Worldwide Timezones Explorer</h2>
               </div>
+              <WorldClock is24Hour={false} />
             </div>
           )}
+
+          {/* Full YouTube Audio Lounge View */}
+          {currentTab === 'youtube' && (
+            <div className="tab-full-view-container">
+              <div className="view-header-bar">
+                <button className="back-link-btn" onClick={() => setCurrentTab('timer')}>
+                  &larr; Back to Dashboard
+                </button>
+                <h2>Focus & Study Audio Lounge</h2>
+              </div>
+              <YouTubePlayer />
+            </div>
+          )}
+
+          {/* Bottom Motivational Quote */}
+          <footer className="timora-bottom-quote-bar">
+            <p className="timora-quote-text">
+              <ShinyText
+                text="“Discipline is choosing between what you want now and what you want most.”"
+                color={isDarkMode ? '#A8A29A' : '#7D7871'}
+                shineColor="var(--primary)"
+                speed={3}
+                spread={90}
+              />
+            </p>
+          </footer>
         </main>
-
-        {/* Footer */}
-        <footer className="app-footer">
-          <div className="footer-inner">
-            <div className="footer-brand">
-              <span className="footer-logo-text">Timora</span>
-              <span className="footer-tagline">Focus. Time. Anywhere.</span>
-            </div>
-            <div className="footer-links">
-              <a
-                href="https://timora-digital-worldwide-clock-with.vercel.app/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="footer-link"
-              >
-                Live App
-              </a>
-              <a
-                href="https://github.com/vidhyawalke/Timora-Digital-Worldwide-Clock-with-Pomodoro"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="footer-link"
-              >
-                GitHub
-              </a>
-            </div>
-            <div className="footer-copy">
-              <span>
-                &copy; {new Date().getFullYear()} Vidhya Walke. All rights reserved.
-              </span>
-              <span className="footer-legal">
-                Proprietary software &mdash; unauthorized reproduction or distribution is prohibited.
-              </span>
-            </div>
-          </div>
-        </footer>
-
-        {/* Google Chrome Style Wallpaper Customizer Modal */}
-        <BackgroundPicker
-          isOpen={isBgPickerOpen}
-          onClose={() => setIsBgPickerOpen(false)}
-          currentWallpaper={currentWallpaper}
-          onSelectWallpaper={handleSelectWallpaper}
-          onResetDefault={handleResetDefaultBackground}
-          isDailyRefresh={isDailyRefresh}
-          setIsDailyRefresh={setIsDailyRefresh}
-        />
-
-        {/* Desktop App Download & Install Modal */}
-        <InstallModal
-          isOpen={isInstallModalOpen}
-          onClose={() => setIsInstallModalOpen(false)}
-          installPrompt={installPrompt}
-          onInstallSuccess={() => setInstallPrompt(null)}
-        />
-
-        {/* Keyboard Shortcuts Modal */}
-        <ShortcutsModal
-          isOpen={isShortcutsModalOpen}
-          onClose={() => setIsShortcutsModalOpen(false)}
-        />
       </div>
+
+      {/* ── MODALS ── */}
+      <MethodModal
+        isOpen={isMethodModalOpen}
+        onClose={() => setIsMethodModalOpen(false)}
+      />
+
+      <DailyReportModal
+        isOpen={isDailyReportOpen}
+        onClose={() => setIsDailyReportOpen(false)}
+        records={[]}
+      />
+
+      {/* Custom Background Image & Wallpaper Picker Modal */}
+      <BackgroundPicker
+        isOpen={isBgPickerOpen}
+        onClose={() => setIsBgPickerOpen(false)}
+        currentWallpaper={currentWallpaper}
+        onSelectWallpaper={(wp) => setCurrentWallpaper(wp)}
+        onResetDefault={() => setCurrentWallpaper(null)}
+        isDailyRefresh={false}
+        setIsDailyRefresh={() => {}}
+      />
+
+      {/* Google Authentication & Profile Sync Modal */}
+      <GoogleAuthModal
+        isOpen={isGoogleAuthOpen}
+        onClose={() => setIsGoogleAuthOpen(false)}
+        onSignInSuccess={handleGoogleSignIn}
+        currentUser={user}
+      />
+
+      <InstallModal
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
+        installPrompt={installPrompt}
+        onInstallSuccess={() => setInstallPrompt(null)}
+      />
+
+      <ShortcutsModal
+        isOpen={isShortcutsModalOpen}
+        onClose={() => setIsShortcutsModalOpen(false)}
+      />
     </div>
   );
 }
