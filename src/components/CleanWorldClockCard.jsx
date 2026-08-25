@@ -5,8 +5,6 @@ const DEFAULT_PINNED_CITIES = [
   { id: '1', name: 'New York', timezone: 'America/New_York' },
   { id: '2', name: 'London', timezone: 'Europe/London' },
   { id: '3', name: 'Tokyo', timezone: 'Asia/Tokyo' },
-  { id: '4', name: 'Sydney', timezone: 'Australia/Sydney' },
-  { id: '5', name: 'Dubai', timezone: 'Asia/Dubai' },
 ];
 
 export default function CleanWorldClockCard({ is24Hour = false, onOpenFullWorldClock }) {
@@ -42,14 +40,19 @@ export default function CleanWorldClockCard({ is24Hour = false, onOpenFullWorldC
   };
 
   return (
-    <div className="clean-right-widget-card clean-world-clock-widget">
+    <div className="clean-right-widget-card clean-world-clock-widget compact-widget">
       {/* Header */}
       <div className="clean-widget-header">
         <h3 className="clean-widget-title">World Clock</h3>
-        <button className="clean-header-link-btn" onClick={onOpenFullWorldClock}>
-          <Plus size={12} />
-          <span>Add</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <button className="clean-header-link-btn" onClick={onOpenFullWorldClock}>
+            <Plus size={12} />
+            <span>Add</span>
+          </button>
+          <button className="clean-header-link-btn" onClick={onOpenFullWorldClock} title="All timezones">
+            <span>All →</span>
+          </button>
+        </div>
       </div>
 
       {/* Cities List */}
@@ -66,14 +69,6 @@ export default function CleanWorldClockCard({ is24Hour = false, onOpenFullWorldC
             </div>
           );
         })}
-      </div>
-
-      {/* Footer Link */}
-      <div className="clean-widget-footer">
-        <button className="clean-footer-link" onClick={onOpenFullWorldClock}>
-          <span>View all timezones</span>
-          <ArrowRight size={13} />
-        </button>
       </div>
     </div>
   );
