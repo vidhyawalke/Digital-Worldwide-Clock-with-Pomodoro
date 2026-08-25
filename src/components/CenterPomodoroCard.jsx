@@ -109,13 +109,14 @@ export default function CenterPomodoroCard({ isDarkMode }) {
       {/* Blueprint grid overlay */}
       <div className="analog-blueprint-grid"></div>
 
-      {/* Top Bar: Status + Sound */}
+      {/* Top Bar: Mode label + Sound */}
       <div className="analog-stage-top-bar">
-        {/* Live Monospace System Status */}
         <div className="analog-status-pill">
           <span className={`status-indicator-dot ${isRunning ? 'active' : ''}`}></span>
           <span className="status-mono-text">
-            SYSTEM_STATUS: {isRunning ? (currentPreset.isBreak ? 'BREAK_ACTIVE' : 'FOCUS_RUNNING') : 'STANDBY'}
+            {isRunning
+              ? currentPreset.isBreak ? 'On a break' : 'Focusing'
+              : 'Ready to focus'}
           </span>
         </div>
 
@@ -163,7 +164,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
 
         <div className="analog-estimated-row">
           <span className="estimated-mono-label">
-            ESTIMATED_COMPLETION: {getEstimatedCompletion()}
+            Done by {getEstimatedCompletion()}
           </span>
         </div>
 
