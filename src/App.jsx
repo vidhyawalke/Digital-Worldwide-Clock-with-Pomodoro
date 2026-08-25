@@ -14,6 +14,7 @@ import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
 import ShortcutsModal from './components/ShortcutsModal';
 import ShinyText from './components/ShinyText';
+import GoogleAuthModal from './components/GoogleAuthModal';
 
 export default function App() {
   // 1. Sliding Sidebar Open/Close Window state (default open, sliding window)
@@ -22,27 +23,34 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : true;
   });
 
-  // 2. Active Tab: 'timer' | 'tasks' | 'worldClock' | 'youtube'
+  // 2. Google User State
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('google_user');
+    return saved ? JSON.parse(saved) : { name: 'Vidhya Walke', email: 'vidhya@gmail.com' };
+  });
+
+  // 3. Active Tab: 'timer' | 'tasks' | 'worldClock' | 'youtube'
   const [currentTab, setCurrentTab] = useState('timer');
 
-  // 3. Theme Mode (Light by default as shown in image)
+  // 4. Theme Mode (Light by default as shown in image)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('timora_dark_mode');
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 4. Custom Wallpaper Background
+  // 5. Custom Wallpaper Background
   const [currentWallpaper, setCurrentWallpaper] = useState(() => {
     const saved = localStorage.getItem('app_wallpaper');
     return saved ? JSON.parse(saved) : null;
   });
 
-  // 5. Modals State
+  // 6. Modals State
   const [isDailyReportOpen, setIsDailyReportOpen] = useState(false);
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
   const [isBgPickerOpen, setIsBgPickerOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
   // 6. Stats
@@ -140,6 +148,22 @@ export default function App() {
     // tracking
   };
 
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('google_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('google_user');
+    }
+  }, [user]);
+
+  const handleGoogleSignIn = (newUser) => {
+    setUser(newUser);
+  };
+
+  const handleGoogleSignOut = () => {
+    setUser(null);
+  };
+
   return (
     <div 
       className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}
@@ -166,6 +190,9 @@ export default function App() {
           totalTargetSessions={8}
           onOpenSettings={() => setIsBgPickerOpen(true)}
           onOpenAnalytics={() => setIsDailyReportOpen(true)}
+          user={user}
+          onOpenGoogleAuth={() => setIsGoogleAuthOpen(true)}
+          onSignOut={handleGoogleSignOut}
         />
 
         {/* Center & Right Main Content Area */}
@@ -270,6 +297,14 @@ export default function App() {
         onResetDefault={() => setCurrentWallpaper(null)}
         isDailyRefresh={false}
         setIsDailyRefresh={() => {}}
+      />
+
+      {/* Google Authentication & Profile Sync Modal */}
+      <GoogleAuthModal
+        isOpen={isGoogleAuthOpen}
+        onClose={() => setIsGoogleAuthOpen(false)}
+        onSignInSuccess={handleGoogleSignIn}
+        currentUser={user}
       />
 
       <InstallModal

@@ -1400,6 +1400,128 @@ input, select {
   text-align: center;
 }
 
+/* Google Sign-in Prompt & Auth Modal */
+.google-signin-prompt-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.google-signin-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.85rem;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #3C4043;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.google-signin-btn-primary:hover {
+  background: #F8FAFC;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  border-color: #CBD5E1;
+}
+
+.timora-app-root.theme-dark .google-signin-btn-primary {
+  background: #272320;
+  color: #FBF9F5;
+  border-color: var(--border-color);
+}
+
+.google-auth-modal {
+  max-width: 460px;
+}
+
+.google-auth-body {
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.google-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.form-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-field-row label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-body);
+}
+
+.form-field-row input {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 0.84rem;
+}
+
+.google-security-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(52, 168, 83, 0.08);
+  border: 1px solid rgba(52, 168, 83, 0.2);
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.72rem;
+  color: #2E7D32;
+  line-height: 1.35;
+}
+
+.timora-app-root.theme-dark .google-security-notice {
+  color: #81C784;
+}
+
+.google-auth-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.btn-secondary-auth {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.btn-google-continue {
+  padding: 0.55rem 1.25rem;
+  border-radius: var(--radius-xs);
+  background: #1A73E8;
+  color: #FFFFFF;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.btn-google-continue:hover {
+  background: #1557B0;
+}
+
 .method-sticker-modal-content {
   max-width: 720px;
   width: 100%;
