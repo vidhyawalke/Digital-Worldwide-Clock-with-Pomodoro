@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Sun, 
   Moon, 
@@ -358,9 +359,9 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
       </header>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          ADD WORLDWIDE CLOCK MODAL (Supports Up to 4 Clocks with Weather)
+          ADD WORLDWIDE CLOCK MODAL (Mounted via Portal directly to body)
          ══════════════════════════════════════════════════════════════════════ */}
-      {isAddClockModalOpen && (
+      {isAddClockModalOpen && createPortal(
         <div className="timora-modal-overlay" onClick={() => setIsAddClockModalOpen(false)}>
           <div className="timora-modal-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="timora-modal-header">
@@ -427,13 +428,14 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════
-          CHOOSE BACKGROUND / WALLPAPER MODAL
+          CHOOSE BACKGROUND MODAL (Mounted via Portal directly to body)
          ══════════════════════════════════════════════════════════════════════ */}
-      {isBgModalOpen && (
+      {isBgModalOpen && createPortal(
         <div className="timora-modal-overlay" onClick={() => setIsBgModalOpen(false)}>
           <div className="timora-modal-dialog bg-picker-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="timora-modal-header">
@@ -514,7 +516,8 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
