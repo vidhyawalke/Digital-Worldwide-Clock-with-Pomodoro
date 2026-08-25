@@ -305,13 +305,13 @@ input {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   1. TOP NAVBAR & REAL-TIME INFO WIDGETS (Airy, Light & Modern Glass)
+   1. TOP NAVBAR & REAL-TIME INFO WIDGETS (Airy, Light & Multi-Clock Fitted)
    ────────────────────────────────────────────────────────────────────────── */
 .timora-clean-navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   height: 64px;
   background: rgba(250, 248, 245, 0.65);
   backdrop-filter: blur(20px) saturate(180%);
@@ -321,7 +321,7 @@ input {
   top: 0;
   z-index: 100;
   flex-shrink: 0;
-  transition: all 0.25s ease;
+  gap: 1rem;
 }
 
 .theme-dark .timora-clean-navbar,
@@ -333,29 +333,37 @@ body.dark-mode .timora-clean-navbar {
 .navbar-brand-section {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   flex-shrink: 0;
 }
 
 .navbar-logo-img {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   border-radius: 8px;
 }
 
 .timora-clean-logo {
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
 }
 
-/* Center Top Info Widgets (No squishing, ample breathing room) */
+/* Center Top Info Bar (Local Time + Weather + Up to 4 Clocks + Add Button) */
 .top-info-bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.55rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  max-width: 100%;
+  padding: 2px 0;
+}
+
+.top-info-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .top-widget {
@@ -364,16 +372,29 @@ body.dark-mode .timora-clean-navbar {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 0.4rem 1rem;
+  padding: 0.35rem 0.85rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-width: 145px;
+  min-width: 130px;
   height: 44px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
   position: relative;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
+  flex-shrink: 0;
+}
+
+.top-widget.local-time-widget {
+  min-width: 130px;
+}
+
+.top-widget.weather-widget-top {
+  min-width: 135px;
+}
+
+.top-widget.foreign-clock-widget {
+  min-width: 120px;
 }
 
 .top-widget.clickable-widget {
@@ -383,7 +404,7 @@ body.dark-mode .timora-clean-navbar {
 .top-widget.clickable-widget:hover,
 .top-widget.foreign-clock-widget:hover {
   border-color: var(--primary);
-  box-shadow: 0 4px 12px var(--primary-subtle);
+  box-shadow: 0 3px 10px var(--primary-subtle);
   transform: translateY(-1px);
 }
 
@@ -391,50 +412,49 @@ body.dark-mode .timora-clean-navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.45rem;
-  line-height: 1.25;
+  gap: 0.4rem;
+  line-height: 1.2;
 }
 
 .top-widget-time {
   font-family: var(--font-mono);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--text-main);
-  line-height: 1.25;
+  line-height: 1.2;
   letter-spacing: -0.01em;
 }
 
 .top-widget-sub {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 500;
   color: var(--text-muted);
-  line-height: 1.2;
-  margin-top: 2px;
+  line-height: 1.15;
+  margin-top: 1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 155px;
+  max-width: 140px;
 }
 
 .top-widget-sub-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.4rem;
-  line-height: 1.2;
+  gap: 0.35rem;
+  line-height: 1.15;
 }
 
 .top-widget-remove-btn {
   color: var(--text-dim);
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   transition: all 0.15s ease;
   flex-shrink: 0;
-  margin-top: 1px;
 }
 
 .top-widget-remove-btn:hover {
@@ -446,16 +466,18 @@ body.dark-mode .timora-clean-navbar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  font-size: 0.76rem;
+  gap: 0.4rem;
+  font-size: 0.74rem;
   font-weight: 600;
   color: var(--text-body);
   border: 1px dashed var(--primary-border);
   border-radius: 12px;
-  padding: 0.4rem 0.9rem;
+  padding: 0.35rem 0.8rem;
   height: 44px;
+  min-width: 125px;
   background: var(--bg-card);
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .top-widget-add-clock-btn:hover {
@@ -469,21 +491,21 @@ body.dark-mode .timora-clean-navbar {
 .navbar-controls-section {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.55rem;
   flex-shrink: 0;
 }
 
 .navbar-text-toggle-btn {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0 0.95rem;
+  gap: 0.4rem;
+  padding: 0 0.85rem;
   height: 38px;
   border-radius: var(--radius-full);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
