@@ -17,23 +17,12 @@ const FOCUS_PRESETS = [
   { id: 'longBreak', label: 'LONG BREAK', minutes: 15, isBreak: true },
 ];
 
-export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, isDarkMode }) {
+export default function CenterPomodoroCard({ isDarkMode }) {
   const [selectedPresetId, setSelectedPresetId] = useState('work');
   const [activeMinutes, setActiveMinutes] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-
-
-  // Session-based state (lives in active browser session)
-  const [currentSessionIndex, setCurrentSessionIndex] = useState(() => {
-    const saved = sessionStorage.getItem('timora_active_session_idx');
-    return saved ? parseInt(saved, 10) : 1;
-  });
-
-  useEffect(() => {
-    sessionStorage.setItem('timora_active_session_idx', currentSessionIndex.toString());
-  }, [currentSessionIndex]);
 
   // Switch preset
   const handleSelectPreset = (preset) => {
@@ -49,34 +38,20 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
 
     if (isRunning && secondsLeft > 0) {
       interval = setInterval(() => {
-        setSecondsLeft((prev) => {
-          if (prev <= 1) return 0;
-          if (!selectedPresetId.includes('Break') && onTimeTracked) {
-            onTimeTracked(1);
-          }
-          return prev - 1;
-        });
+        setSecondsLeft((prev) => prev <= 1 ? 0 : prev - 1);
       }, 1000);
     } else if (isRunning && secondsLeft === 0) {
       if (!isMuted) soundFx.playChime('complete');
 
+      // Auto transition: focus → break, break → work
       if (!selectedPresetId.includes('Break')) {
-        if (onSessionComplete) onSessionComplete(activeMinutes);
-        
-        // Progress to next session in 1-4 cycle
-        const nextIndex = (currentSessionIndex % 4) + 1;
-        setCurrentSessionIndex(nextIndex);
-
-        // Auto transition to appropriate break
-        const nextBreakId = currentSessionIndex === 4 ? 'longBreak' : 'shortBreak';
-        const breakPreset = FOCUS_PRESETS.find(p => p.id === nextBreakId);
+        const breakPreset = FOCUS_PRESETS.find(p => p.id === 'shortBreak');
         if (breakPreset) {
           setSelectedPresetId(breakPreset.id);
           setActiveMinutes(breakPreset.minutes);
           setSecondsLeft(breakPreset.minutes * 60);
         }
       } else {
-        // Break finished -> return to WORK
         const workPreset = FOCUS_PRESETS.find(p => p.id === 'work');
         if (workPreset) {
           setSelectedPresetId(workPreset.id);
@@ -88,7 +63,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, secondsLeft, selectedPresetId, activeMinutes, isMuted, currentSessionIndex, onSessionComplete, onTimeTracked]);
+  }, [isRunning, secondsLeft, selectedPresetId, isMuted]);
 
   const togglePlay = () => {
     soundFx.initContext();
@@ -104,17 +79,13 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
   const handleSkip = () => {
     setIsRunning(false);
     if (!selectedPresetId.includes('Break')) {
-      const nextIndex = (currentSessionIndex % 4) + 1;
-      setCurrentSessionIndex(nextIndex);
-      const breakPreset = FOCUS_PRESETS.find(p => p.id === (currentSessionIndex === 4 ? 'longBreak' : 'shortBreak'));
+      const breakPreset = FOCUS_PRESETS.find(p => p.id === 'shortBreak');
       if (breakPreset) handleSelectPreset(breakPreset);
     } else {
       const workPreset = FOCUS_PRESETS.find(p => p.id === 'work');
       if (workPreset) handleSelectPreset(workPreset);
     }
   };
-
-
 
   // Format time
   const minutes = Math.floor(secondsLeft / 60);
@@ -132,21 +103,15 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
   };
 
   const currentPreset = FOCUS_PRESETS.find(p => p.id === selectedPresetId) || FOCUS_PRESETS[0];
-  const sessionTag = `SESSION_0${currentSessionIndex}/04`;
 
   return (
     <div className="hero-analog-pomodoro-stage">
-      {/* Subtle blueprint grid overlay */}
+      {/* Blueprint grid overlay */}
       <div className="analog-blueprint-grid"></div>
 
-      {/* Top Technical Status Header with Session Indicator & Snapshot Action */}
+      {/* Top Bar: Status + Sound */}
       <div className="analog-stage-top-bar">
-        {/* Left: User & Session Tag */}
-        <div className="analog-user-session-col">
-          <span className="analog-session-tag">{sessionTag}</span>
-        </div>
-
-        {/* Center: Live Monospace System Status */}
+        {/* Live Monospace System Status */}
         <div className="analog-status-pill">
           <span className={`status-indicator-dot ${isRunning ? 'active' : ''}`}></span>
           <span className="status-mono-text">
@@ -154,7 +119,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
           </span>
         </div>
 
-        {/* Right: Sound Chime Toggle */}
+        {/* Sound Chime Toggle */}
         <button 
           className="analog-sound-btn"
           onClick={() => setIsMuted(!isMuted)}
@@ -164,7 +129,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         </button>
       </div>
 
-      {/* Preset Category Switcher (WORK, STUDY, READ, CODE, BREAK) */}
+      {/* Preset Category Switcher */}
       <div className="analog-preset-tabs-row">
         {FOCUS_PRESETS.map((preset) => {
           const isActive = selectedPresetId === preset.id;
@@ -181,13 +146,11 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         })}
       </div>
 
-      {/* Grand Hero Timer Stage with Technical Framing Brackets */}
+      {/* Hero Timer with Corner Brackets */}
       <div className="analog-hero-timer-box">
-        {/* Top-Left and Top-Right Framing Brackets */}
         <div className="corner-bracket top-left"></div>
         <div className="corner-bracket top-right"></div>
 
-        {/* Massive Timer Digits */}
         <div className="analog-big-digits-display">
           <ShinyText
             text={formattedTime}
@@ -198,19 +161,17 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
           />
         </div>
 
-        {/* Estimated Completion Timestamp */}
         <div className="analog-estimated-row">
           <span className="estimated-mono-label">
             ESTIMATED_COMPLETION: {getEstimatedCompletion()}
           </span>
         </div>
 
-        {/* Bottom-Left and Bottom-Right Framing Brackets */}
         <div className="corner-bracket bottom-left"></div>
         <div className="corner-bracket bottom-right"></div>
       </div>
 
-      {/* Primary Technical Start Button */}
+      {/* Start / Pause Button */}
       <div className="analog-primary-action-wrap">
         <button 
           className={`analog-start-btn ${isRunning ? 'running' : ''}`}
@@ -220,19 +181,17 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         </button>
       </div>
 
-      {/* Secondary Controls: Reset, Skip, & End Session */}
+      {/* Secondary Controls */}
       <div className="analog-secondary-controls-row">
         <button className="analog-ghost-control-btn" onClick={handleReset}>
           <RotateCcw size={13} />
           <span>RESET</span>
         </button>
         <button className="analog-ghost-control-btn" onClick={handleSkip}>
-          <span>SKIP SESSION</span>
+          <span>SKIP</span>
           <SkipForward size={13} />
         </button>
       </div>
-
-
     </div>
   );
 }

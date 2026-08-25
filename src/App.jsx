@@ -28,16 +28,7 @@ export default function App() {
     localStorage.setItem('timora_dark_mode', JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
-  // Stats (session-based)
-  const [stats, setStats] = useState({ completedToday: 4, totalMinutes: 100 });
 
-  const handleSessionComplete = (minutes) => {
-    setStats(prev => ({
-      ...prev,
-      completedToday: prev.completedToday + 1,
-      totalMinutes: prev.totalMinutes + minutes
-    }));
-  };
 
   if (showLanding) {
     return <LandingScreen onComplete={handleLandingComplete} />;
@@ -56,11 +47,7 @@ export default function App() {
         <div className="timora-two-column-stage">
           {/* Primary: Hero Pomodoro + Session Tasks */}
           <div className="stage-center-column">
-            <CenterPomodoroCard
-              onSessionComplete={handleSessionComplete}
-              onTimeTracked={() => {}}
-              isDarkMode={isDarkMode}
-            />
+            <CenterPomodoroCard isDarkMode={isDarkMode} />
             <CleanTasksCard />
           </div>
 
