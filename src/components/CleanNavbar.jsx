@@ -18,6 +18,20 @@ function TopInfoBar({ isDarkMode }) {
   const [showAddClock, setShowAddClock] = useState(false);
   const [tzSearch, setTzSearch] = useState('');
 
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (!showAddClock) return;
+    const handleClick = (e) => {
+      if (!e.target.closest('.tz-picker-dropdown') && !e.target.closest('.top-widget-add-clock-btn')) {
+        setShowAddClock(false);
+        setTzSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showAddClock]);
+
+
   // Real-time clock tick
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -150,9 +164,17 @@ function TopInfoBar({ isDarkMode }) {
           </button>
         )}
 
-        {/* Timezone picker dropdown */}
+        {/* Timezone picker dropdown — fixed to always render above all content */}
         {showAddClock && (
-          <div className="tz-picker-dropdown">
+          <div
+            className="tz-picker-dropdown"
+            style={{
+              position: 'fixed',
+              top: '60px',
+              right: '200px',
+              zIndex: 9000,
+            }}
+          >
             <input
               className="tz-search-input"
               placeholder="Search city..."
