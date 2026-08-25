@@ -23,6 +23,14 @@ export default function CleanTasksCard() {
     sessionStorage.setItem('timora_session_tasks', JSON.stringify(tasks));
   }, [tasks]);
 
+  useEffect(() => {
+    const handleReset = () => {
+      setTasks(DEFAULT_TASKS);
+    };
+    window.addEventListener('timora_session_reset', handleReset);
+    return () => window.removeEventListener('timora_session_reset', handleReset);
+  }, []);
+
   const toggleTask = (id) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
   };

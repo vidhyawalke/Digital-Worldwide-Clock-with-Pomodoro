@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Download, Copy, Check, X, Camera, Sparkles } from 'lucide-react';
+import { Download, Copy, Check, X, Camera, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function SessionSnapshotModal({
   isOpen,
@@ -7,7 +7,8 @@ export default function SessionSnapshotModal({
   sessionTag = 'SESSION_01/04',
   modeLabel = 'WORK',
   activeMinutes = 25,
-  isDarkMode = false
+  isDarkMode = false,
+  onStartNewSession
 }) {
   const canvasRef = useRef(null);
   const [copied, setCopied] = useState(false);
@@ -99,7 +100,7 @@ export default function SessionSnapshotModal({
     ctx.font = '600 11px "JetBrains Mono", monospace';
     ctx.fillStyle = mutedColor;
     ctx.textAlign = 'right';
-    ctx.fillText('STATUS: VERIFIED FOCUS RECEIPT', width - 60, 72);
+    ctx.fillText('STATUS: SESSION STATUS & RECEIPT [COMPLETED]', width - 60, 72);
     ctx.textAlign = 'left';
 
     // Divider Line
@@ -123,7 +124,7 @@ export default function SessionSnapshotModal({
     // 7. Mode & Duration Main Title
     ctx.font = '800 36px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = textColor;
-    ctx.fillText(`${modeLabel} SESSION`, 60, 190);
+    ctx.fillText(`${modeLabel} SESSION STATUS`, 60, 190);
 
     // 8. Focus Duration Display (Big Numbers)
     ctx.font = '700 52px "Plus Jakarta Sans", sans-serif';
@@ -157,7 +158,7 @@ export default function SessionSnapshotModal({
     // 10. Footer Details & Verification Stamp
     ctx.font = '600 11px "JetBrains Mono", monospace';
     ctx.fillStyle = mutedColor;
-    ctx.fillText('SYSTEM_VERIFICATION: PASS [100%]', 60, 435);
+    ctx.fillText('SESSION_STATUS: 100% FINISHED // READY FOR NEXT SESSION', 60, 435);
 
     ctx.textAlign = 'right';
     ctx.fillText('timora.focus // session-based prototype', width - 60, 435);
@@ -174,13 +175,32 @@ export default function SessionSnapshotModal({
 
   if (!isOpen) return null;
 
-  const handleDownload = () => {
+  const downloadCanvasImage = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const link = document.createElement('a');
-    link.download = `timora-${sessionTag.toLowerCase().replace('/', '-')}-${Date.now()}.png`;
+    link.download = `timora-${sessionTag.toLowerCase().replace('/', '-')}-receipt-${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
+  };
+
+  const handleDownloadOnly = () => {
+    downloadCanvasImage();
+  };
+
+  const handleSaveAndStartNew = () => {
+    downloadCanvasImage();
+    if (onStartNewSession) {
+      onStartNewSession();
+    }
+    onClose();
+  };
+
+  const handleClearAndStartNewWithoutDownload = () => {
+    if (onStartNewSession) {
+      onStartNewSession();
+    }
+    onClose();
   };
 
   const handleCopy = async () => {
@@ -196,8 +216,7 @@ export default function SessionSnapshotModal({
         setTimeout(() => setCopied(false), 2000);
       });
     } catch {
-      // fallback download
-      handleDownload();
+      downloadCanvasImage();
     }
   };
 
@@ -208,7 +227,7 @@ export default function SessionSnapshotModal({
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Camera size={18} color="var(--primary)" />
-            <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Session Receipt Image</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Session Status & Receipt</h3>
           </div>
           <button className="modal-close-btn" onClick={onClose}>
             <X size={18} />
@@ -226,16 +245,21 @@ export default function SessionSnapshotModal({
           </div>
         </div>
 
-        {/* Modal Footer Actions */}
+        {/* Modal Footer Actions: Download & Delete Session to Start Fresh */}
         <div className="session-snapshot-footer">
-          <button className="snapshot-action-btn secondary" onClick={handleCopy}>
-            {copied ? <Check size={15} color="#10B981" /> : <Copy size={15} />}
-            <span>{copied ? 'Copied to Clipboard!' : 'Copy Image'}</span>
+          <button className="snapshot-action-btn secondary" onClick={handleClearAndStartNewWithoutDownload} title="Delete current session and start fresh without saving">
+            <Trash2 size={14} />
+            <span>Clear & Start Fresh</span>
           </button>
 
-          <button className="snapshot-action-btn primary" onClick={handleDownload}>
-            <Download size={15} />
-            <span>Download PNG</span>
+          <button className="snapshot-action-btn secondary" onClick={handleCopy}>
+            {copied ? <Check size={14} color="#10B981" /> : <Copy size={14} />}
+            <span>{copied ? 'Copied!' : 'Copy'}</span>
+          </button>
+
+          <button className="snapshot-action-btn primary" onClick={handleSaveAndStartNew} title="Download session receipt image, delete session data, and start a fresh session">
+            <Download size={14} />
+            <span>Download & Start Fresh</span>
           </button>
         </div>
       </div>

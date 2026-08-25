@@ -7,7 +7,7 @@ import {
   Volume2, 
   VolumeX,
   Camera,
-  Share2
+  RotateCw
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import ShinyText from './ShinyText';
@@ -72,6 +72,9 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         const nextIndex = (currentSessionIndex % 4) + 1;
         setCurrentSessionIndex(nextIndex);
 
+        // Auto open session status receipt modal so user gets status and can download & start fresh
+        setIsSnapshotOpen(true);
+
         // Auto transition to appropriate break
         const nextBreakId = currentSessionIndex === 4 ? 'longBreak' : 'shortBreak';
         const breakPreset = FOCUS_PRESETS.find(p => p.id === nextBreakId);
@@ -119,6 +122,19 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
     }
   };
 
+  // Delete current session and start fresh
+  const handleStartFreshSession = () => {
+    setIsRunning(false);
+    const workPreset = FOCUS_PRESETS.find(p => p.id === 'work') || FOCUS_PRESETS[0];
+    setSelectedPresetId(workPreset.id);
+    setActiveMinutes(workPreset.minutes);
+    setSecondsLeft(workPreset.minutes * 60);
+    setCurrentSessionIndex(1);
+    sessionStorage.setItem('timora_active_session_idx', '1');
+    sessionStorage.removeItem('timora_session_tasks');
+    window.dispatchEvent(new Event('timora_session_reset'));
+  };
+
   // Format time
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -144,7 +160,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
 
       {/* Top Technical Status Header with Session Indicator & Snapshot Action */}
       <div className="analog-stage-top-bar">
-        {/* Left: User & Session Tag (inspired by Analog Lab) */}
+        {/* Left: User & Session Tag */}
         <div className="analog-user-session-col">
           <span className="analog-session-tag">{sessionTag}</span>
         </div>
@@ -162,10 +178,10 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
           <button 
             className="analog-snapshot-btn"
             onClick={() => setIsSnapshotOpen(true)}
-            title="Get and download an image of your focus session"
+            title="View session status, get image receipt, and start fresh session"
           >
             <Camera size={13} />
-            <span>GET IMAGE</span>
+            <span>SESSION STATUS</span>
           </button>
 
           <button 
@@ -234,7 +250,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         </button>
       </div>
 
-      {/* Secondary Controls: Reset & Skip */}
+      {/* Secondary Controls: Reset, Skip, & End Session */}
       <div className="analog-secondary-controls-row">
         <button className="analog-ghost-control-btn" onClick={handleReset}>
           <RotateCcw size={13} />
@@ -254,6 +270,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         modeLabel={currentPreset.label}
         activeMinutes={activeMinutes}
         isDarkMode={isDarkMode}
+        onStartNewSession={handleStartFreshSession}
       />
     </div>
   );
