@@ -5,7 +5,3 @@ A productivity dashboard with a live digital clock, worldwide timezone viewer, P
 **Live App**: https://timora-digital-worldwide-clock-with.vercel.app/
 
 **Owner**: Vidhya Walke — https://github.com/vidhyawalke
-
----
-
-> ⚠️ This is a private, proprietary project. Unauthorized copying, modification, or distribution is strictly prohibited.
