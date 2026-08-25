@@ -12,7 +12,7 @@ const DEFAULT_TASKS = [
 
 export default function CleanTasksCard() {
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('timora_clean_tasks');
+    const saved = sessionStorage.getItem('timora_session_tasks');
     return saved ? JSON.parse(saved) : DEFAULT_TASKS;
   });
 
@@ -20,8 +20,16 @@ export default function CleanTasksCard() {
   const [newTitle, setNewTitle] = useState('');
 
   useEffect(() => {
-    localStorage.setItem('timora_clean_tasks', JSON.stringify(tasks));
+    sessionStorage.setItem('timora_session_tasks', JSON.stringify(tasks));
   }, [tasks]);
+
+  useEffect(() => {
+    const handleReset = () => {
+      setTasks(DEFAULT_TASKS);
+    };
+    window.addEventListener('timora_session_reset', handleReset);
+    return () => window.removeEventListener('timora_session_reset', handleReset);
+  }, []);
 
   const toggleTask = (id) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -44,7 +52,7 @@ export default function CleanTasksCard() {
     <div className="clean-tasks-card">
       {/* Header */}
       <div className="clean-tasks-header">
-        <h3 className="clean-tasks-title">Tasks</h3>
+        <h3 className="clean-tasks-title">Session Tasks</h3>
         <button 
           className="clean-add-task-btn"
           onClick={() => setIsAdding(!isAdding)}
