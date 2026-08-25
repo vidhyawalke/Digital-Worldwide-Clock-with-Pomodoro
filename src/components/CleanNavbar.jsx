@@ -12,7 +12,11 @@ import {
   Upload,
   Link as LinkIcon,
   RotateCcw,
-  Sparkles
+  CloudRain,
+  CloudLightning,
+  CloudSnow,
+  Cloud,
+  SunMedium
 } from 'lucide-react';
 import ShinyText from './ShinyText';
 import { searchGlobalCitiesAPI } from '../services/citiesApi';
@@ -37,6 +41,17 @@ export function CountryFlag({ countryCode = 'un', name = '', size = 'sm' }) {
       }}
     />
   );
+}
+
+// Weather Icon Helper
+function WeatherIcon({ condition = 'Clear', size = 14 }) {
+  const c = condition.toLowerCase();
+  if (c.includes('thunder')) return <CloudLightning size={size} color="var(--primary)" />;
+  if (c.includes('rain') || c.includes('drizzle') || c.includes('shower')) return <CloudRain size={size} color="var(--primary)" />;
+  if (c.includes('snow')) return <CloudSnow size={size} color="var(--primary)" />;
+  if (c.includes('cloud') || c.includes('overcast') || c.includes('fog')) return <Cloud size={size} color="var(--primary)" />;
+  if (c.includes('sun') || c.includes('clear')) return <SunMedium size={size} color="var(--primary)" />;
+  return <CloudSun size={size} color="var(--primary)" />;
 }
 
 // Top Popular Global Hubs
@@ -66,7 +81,12 @@ const CURATED_WALLPAPERS = [
 export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, onSelectBg }) {
   const [now, setNow] = useState(new Date());
 
-  // 1. Weather State
+  // 1. Local City / Area Name
+  const [localPlace, setLocalPlace] = useState(() => {
+    return localStorage.getItem('timora_local_place_name') || 'Local';
+  });
+
+  // 2. Weather State
   const [weather, setWeather] = useState({
     temp: '26°C',
     condition: 'Sunny',
@@ -79,7 +99,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
   const [isLocating, setIsLocating] = useState(false);
   const [gpsNotice, setGpsNotice] = useState(null);
 
-  // 2. Up to 4 Addon Worldwide Clocks
+  // 3. Up to 4 Addon Worldwide Clocks
   const [foreignClocks, setForeignClocks] = useState(() => {
     const saved = localStorage.getItem('timora_foreign_clocks_v2');
     if (saved) {
@@ -97,10 +117,9 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
   const [clockSearchQuery, setClockSearchQuery] = useState('');
   const [clockSearchResults, setClockSearchResults] = useState([]);
 
-  // 3. Wallpaper Picker Modal
+  // 4. Wallpaper Picker Modal
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [customBgUrl, setCustomBgUrl] = useState('');
-  const [unsplashKeyword, setUnsplashKeyword] = useState('');
   const fileInputRef = useRef(null);
 
   // Tick clock every second
@@ -129,12 +148,16 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
       };
       const cond = wmoMap[cw?.weathercode] || 'Clear';
 
-      setWeather({
+      const weatherObj = {
         temp: `${Math.round(cw.temperature)}°C`,
         condition: cond,
         location: cityName,
         countryCode: countryCode || 'in'
-      });
+      };
+
+      setWeather(weatherObj);
+      setLocalPlace(cityName);
+      localStorage.setItem('timora_local_place_name', cityName);
       localStorage.setItem('timora_weather_location', JSON.stringify({ lat, lon, name: cityName, countryCode }));
     } catch (e) {
       console.warn('Weather fetch failed:', e);
@@ -155,7 +178,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude: lat, longitude: lon } = pos.coords;
-        let detectedCity = 'My Location';
+        let detectedCity = 'Local';
         let detectedCode = 'in';
         try {
           const geoRes = await fetch(
@@ -163,7 +186,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
           );
           if (geoRes.ok) {
             const geoData = await geoRes.json();
-            detectedCity = geoData.city || geoData.locality || geoData.principalSubdivision || 'My Location';
+            detectedCity = geoData.city || geoData.locality || geoData.principalSubdivision || 'Local';
             detectedCode = (geoData.countryCode || 'in').toLowerCase();
           }
         } catch {}
@@ -184,17 +207,37 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
     );
   };
 
-  // Initial Weather Load
+  // Automatic Seamless Local Location & Weather Detection on Mount
   useEffect(() => {
-    const saved = localStorage.getItem('timora_weather_location');
-    if (saved) {
+    const detectAutoLocation = async () => {
+      const saved = localStorage.getItem('timora_weather_location');
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          fetchWeatherForCoords(p.lat, p.lon, p.name, p.countryCode);
+          return;
+        } catch {}
+      }
+
+      // Automatically detect IP client location
       try {
-        const p = JSON.parse(saved);
-        fetchWeatherForCoords(p.lat, p.lon, p.name, p.countryCode);
-        return;
+        const geoRes = await fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en');
+        if (geoRes.ok) {
+          const data = await geoRes.json();
+          const city = data.city || data.locality || data.principalSubdivision || 'Local';
+          const code = (data.countryCode || 'in').toLowerCase();
+          const lat = data.latitude || 15.5937;
+          const lon = data.longitude || 73.8142;
+          fetchWeatherForCoords(lat, lon, city, code);
+          return;
+        }
       } catch {}
-    }
-    fetchWeatherForCoords(15.5937, 73.8142, 'Assagao', 'in');
+
+      // Fallback
+      fetchWeatherForCoords(15.5937, 73.8142, 'Assagao', 'in');
+    };
+
+    detectAutoLocation();
   }, []);
 
   // Weather place search debounced
@@ -260,7 +303,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
     setForeignClocks(prev => prev.filter(c => c.id !== id));
   };
 
-  // Local PC File Upload Handler
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -274,22 +316,11 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
     reader.readAsDataURL(file);
   };
 
-  // Custom URL Submit Handler
   const handleCustomBgSubmit = (e) => {
     e.preventDefault();
     if (!customBgUrl.trim()) return;
     onSelectBg(customBgUrl.trim());
     setCustomBgUrl('');
-    setIsBgModalOpen(false);
-  };
-
-  // Unsplash Search / Keyword Handler
-  const handleUnsplashKeywordSubmit = (e) => {
-    e.preventDefault();
-    if (!unsplashKeyword.trim()) return;
-    const unsplashUrl = `https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000&auto=format&fit=crop&sig=${encodeURIComponent(unsplashKeyword.trim())}`;
-    onSelectBg(unsplashUrl);
-    setUnsplashKeyword('');
     setIsBgModalOpen(false);
   };
 
@@ -310,32 +341,43 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
           </h1>
         </div>
 
-        {/* Center: Real-Time Info Bar (Local Time + Weather + Up to 4 Clocks) */}
+        {/* Center: Real-Time Info Bar */}
         <div className="top-info-bar">
-          {/* Widget 1: Local Clock */}
-          <div className="top-widget local-time-widget" title="Your Local Time">
-            <span className="top-widget-time">{localTime}</span>
-            <span className="top-widget-sub">{localDate} · Local</span>
+          {/* 1. Local Time & Date with Detected Place Name */}
+          <div 
+            className="top-widget local-time-widget clickable-widget" 
+            onClick={() => setIsWeatherModalOpen(true)}
+            title="Your local live time and location (Click to change location)"
+            role="button"
+            tabIndex={0}
+          >
+            <div className="top-widget-title-row">
+              <span className="top-widget-time">{localTime}</span>
+              <CountryFlag countryCode={weather.countryCode || 'in'} name={localPlace} size="sm" />
+            </div>
+            <div className="top-widget-sub-row">
+              <span className="top-widget-sub">{localDate} · {localPlace}</span>
+            </div>
           </div>
 
-          {/* Widget 2: Live Weather */}
+          {/* 2. Live Weather for that Location */}
           <div 
             className="top-widget weather-widget-top clickable-widget"
             onClick={() => setIsWeatherModalOpen(true)}
-            title="Click to change weather location or detect GPS"
+            title="Live weather forecast (Click to search any village, city or use GPS)"
             role="button"
             tabIndex={0}
           >
             <div className="top-widget-title-row">
               <span className="top-widget-time">{weather.temp}</span>
-              <CloudSun size={14} color="var(--primary)" />
+              <WeatherIcon condition={weather.condition} size={14} />
             </div>
             <div className="top-widget-sub-row">
               <span className="top-widget-sub">{weather.condition} · {weather.location}</span>
             </div>
           </div>
 
-          {/* Up to 4 Addon Worldwide Clocks */}
+          {/* 3. Up to 4 Addon Worldwide Place Clocks */}
           {foreignClocks.map((clock) => (
             <div key={clock.id} className="top-widget foreign-clock-widget">
               <div className="top-widget-title-row">
@@ -356,7 +398,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
             </div>
           ))}
 
-          {/* Add City Clock Button (visible if < 4 clocks) */}
+          {/* 4. Add City Clock Button (visible if < 4 clocks) */}
           {foreignClocks.length < 4 && (
             <button
               className="top-widget-add-clock-btn"
@@ -369,9 +411,8 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
           )}
         </div>
 
-        {/* Right: Theme Toggle & Choose Background Button */}
+        {/* Right: Choose BG & Theme Toggle */}
         <div className="navbar-controls-section">
-          {/* Choose Background Button */}
           <button
             className="navbar-text-toggle-btn navbar-bg-btn"
             onClick={() => setIsBgModalOpen(true)}
@@ -382,7 +423,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
             <span>Choose BG</span>
           </button>
 
-          {/* Dark / Light Toggle Button */}
           <button
             className="navbar-text-toggle-btn"
             onClick={onToggleDarkMode}
@@ -396,97 +436,6 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
       </header>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          CHOOSE BACKGROUND / WALLPAPER MODAL
-         ══════════════════════════════════════════════════════════════════════ */}
-      {isBgModalOpen && (
-        <div className="timora-modal-overlay" onClick={() => setIsBgModalOpen(false)}>
-          <div className="timora-modal-dialog bg-picker-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="timora-modal-header">
-              <div className="modal-title-wrap">
-                <ImageIcon size={18} color="var(--primary)" />
-                <h3>Choose Background</h3>
-              </div>
-              <button className="modal-close-btn" onClick={() => setIsBgModalOpen(false)}>
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="timora-modal-body bg-modal-body">
-              {/* Option A: Upload from PC / Computer */}
-              <div className="bg-modal-section">
-                <span className="presets-label">Upload from PC:</span>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                />
-                <button 
-                  className="bg-upload-pc-btn"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload size={15} />
-                  <span>Choose Image File from Your Device</span>
-                </button>
-              </div>
-
-              {/* Option B: Direct Image / Unsplash URL */}
-              <div className="bg-modal-section">
-                <span className="presets-label">Paste Image / Unsplash Link:</span>
-                <form onSubmit={handleCustomBgSubmit} className="bg-url-form">
-                  <div className="modal-search-input-wrap" style={{ flex: 1 }}>
-                    <LinkIcon size={14} className="search-icon" />
-                    <input
-                      type="url"
-                      placeholder="Paste https://images.unsplash.com/... or any image URL"
-                      value={customBgUrl}
-                      onChange={(e) => setCustomBgUrl(e.target.value)}
-                    />
-                  </div>
-                  <button type="submit" className="bg-apply-btn">Apply</button>
-                </form>
-              </div>
-
-              {/* Option C: Curated Aesthetic Wallpapers */}
-              <div className="bg-modal-section">
-                <span className="presets-label">Curated Unsplash Wallpapers:</span>
-                <div className="bg-curated-grid">
-                  {CURATED_WALLPAPERS.map((wp) => (
-                    <button
-                      key={wp.id}
-                      className={`bg-thumb-card ${customBg === wp.url ? 'active' : ''}`}
-                      onClick={() => {
-                        onSelectBg(wp.url);
-                        setIsBgModalOpen(false);
-                      }}
-                    >
-                      <img src={wp.url} alt={wp.title} className="bg-thumb-img" loading="lazy" />
-                      <span className="bg-thumb-title">{wp.title}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Reset to Default */}
-              {customBg && (
-                <button
-                  className="bg-reset-default-btn"
-                  onClick={() => {
-                    onSelectBg(null);
-                    setIsBgModalOpen(false);
-                  }}
-                >
-                  <RotateCcw size={14} />
-                  <span>Reset to Default Theme Background</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════════════════
           WEATHER LOCATION MODAL (Places API + GPS)
          ══════════════════════════════════════════════════════════════════════ */}
       {isWeatherModalOpen && (
@@ -495,7 +444,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
             <div className="timora-modal-header">
               <div className="modal-title-wrap">
                 <MapPin size={18} color="var(--primary)" />
-                <h3>Weather Forecast Place</h3>
+                <h3>Local Location & Forecast</h3>
               </div>
               <button className="modal-close-btn" onClick={() => setIsWeatherModalOpen(false)}>
                 <X size={16} />
@@ -526,7 +475,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
                 <Search size={14} className="search-icon" />
                 <input
                   type="text"
-                  placeholder="Search any place, village, or city..."
+                  placeholder="Search your city, town or village (e.g. Assagao, London, Mumbai)..."
                   value={weatherSearch}
                   onChange={(e) => setWeatherSearch(e.target.value)}
                   autoFocus
@@ -560,7 +509,7 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
                 </div>
               ) : (
                 <div className="modal-presets-section">
-                  <span className="presets-label">Popular Destinations:</span>
+                  <span className="presets-label">Popular Places:</span>
                   <div className="modal-preset-grid">
                     {POPULAR_HUBS.map((hub) => (
                       <button
@@ -651,6 +600,93 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
                     ))}
                   </div>
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          CHOOSE BACKGROUND / WALLPAPER MODAL
+         ══════════════════════════════════════════════════════════════════════ */}
+      {isBgModalOpen && (
+        <div className="timora-modal-overlay" onClick={() => setIsBgModalOpen(false)}>
+          <div className="timora-modal-dialog bg-picker-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="timora-modal-header">
+              <div className="modal-title-wrap">
+                <ImageIcon size={18} color="var(--primary)" />
+                <h3>Choose Background</h3>
+              </div>
+              <button className="modal-close-btn" onClick={() => setIsBgModalOpen(false)}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="timora-modal-body bg-modal-body">
+              <div className="bg-modal-section">
+                <span className="presets-label">Upload from PC:</span>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                />
+                <button 
+                  className="bg-upload-pc-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload size={15} />
+                  <span>Choose Image File from Your Device</span>
+                </button>
+              </div>
+
+              <div className="bg-modal-section">
+                <span className="presets-label">Paste Image / Unsplash Link:</span>
+                <form onSubmit={handleCustomBgSubmit} className="bg-url-form">
+                  <div className="modal-search-input-wrap" style={{ flex: 1 }}>
+                    <LinkIcon size={14} className="search-icon" />
+                    <input
+                      type="url"
+                      placeholder="Paste https://images.unsplash.com/... or image URL"
+                      value={customBgUrl}
+                      onChange={(e) => setCustomBgUrl(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit" className="bg-apply-btn">Apply</button>
+                </form>
+              </div>
+
+              <div className="bg-modal-section">
+                <span className="presets-label">Curated Unsplash Wallpapers:</span>
+                <div className="bg-curated-grid">
+                  {CURATED_WALLPAPERS.map((wp) => (
+                    <button
+                      key={wp.id}
+                      className={`bg-thumb-card ${customBg === wp.url ? 'active' : ''}`}
+                      onClick={() => {
+                        onSelectBg(wp.url);
+                        setIsBgModalOpen(false);
+                      }}
+                    >
+                      <img src={wp.url} alt={wp.title} className="bg-thumb-img" loading="lazy" />
+                      <span className="bg-thumb-title">{wp.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {customBg && (
+                <button
+                  className="bg-reset-default-btn"
+                  onClick={() => {
+                    onSelectBg(null);
+                    setIsBgModalOpen(false);
+                  }}
+                >
+                  <RotateCcw size={14} />
+                  <span>Reset to Default Theme Background</span>
+                </button>
               )}
             </div>
           </div>
