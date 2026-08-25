@@ -1,72 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { Check, Plus, Trash2, CheckCircle2, ListTodo } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, Plus, Trash2 } from 'lucide-react';
 
-const INITIAL_TASKS = [
-  { id: '1', title: 'Focus on primary project sprint', completed: true },
-  { id: '2', title: 'Review pull requests and comments', completed: true },
-  { id: '3', title: 'Plan 45-min deep focus session', completed: false },
-  { id: '4', title: 'Hydrate and take short break', completed: false },
+const DEFAULT_TASKS = [
+  { id: '1', title: 'Read project requirements', completed: true },
+  { id: '2', title: 'Team standup meeting', completed: true },
+  { id: '3', title: 'Reply to emails', completed: true },
+  { id: '4', title: 'Design homepage wireframe', completed: false },
 ];
 
 export default function CleanTasksCard() {
   const [tasks, setTasks] = useState(() => {
-    const saved = localStorage.getItem('timora_tasks_list');
-    return saved ? JSON.parse(saved) : INITIAL_TASKS;
+    const saved = localStorage.getItem('timora_clean_tasks');
+    return saved ? JSON.parse(saved) : DEFAULT_TASKS;
   });
 
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
 
-  useEffect(() => {
-    localStorage.setItem('timora_tasks_list', JSON.stringify(tasks));
-  }, [tasks]);
+  const saveTasks = (newTaskList) => {
+    setTasks(newTaskList);
+    localStorage.setItem('timora_clean_tasks', JSON.stringify(newTaskList));
+  };
 
   const toggleTask = (id) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    const updated = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+    saveTasks(updated);
   };
 
   const handleAddTask = (e) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    const newTask = {
-      id: Date.now().toString(),
-      title: newTitle.trim(),
-      completed: false
-    };
-    setTasks(prev => [newTask, ...prev]);
+    const updated = [...tasks, { id: Date.now().toString(), title: newTitle.trim(), completed: false }];
+    saveTasks(updated);
     setNewTitle('');
     setIsAdding(false);
   };
 
   const deleteTask = (id, e) => {
     e.stopPropagation();
-    setTasks(prev => prev.filter(t => t.id !== id));
+    const updated = tasks.filter(t => t.id !== id);
+    saveTasks(updated);
   };
-
-  const completedCount = tasks.filter(t => t.completed).length;
 
   return (
     <div className="clean-tasks-card">
       {/* Header */}
       <div className="clean-tasks-header">
-        <div className="clean-tasks-title-wrap">
-          <ListTodo size={15} color="var(--primary)" />
-          <h3 className="clean-tasks-title">Session Tasks</h3>
-          <span className="clean-tasks-badge">
-            {completedCount}/{tasks.length} done
-          </span>
-        </div>
+        <h3 className="clean-tasks-title">Tasks</h3>
         <button 
           className="clean-add-task-btn"
           onClick={() => setIsAdding(!isAdding)}
-          title="Add a new task"
         >
           <Plus size={13} />
           <span>Add Task</span>
         </button>
       </div>
 
-      {/* Add Task Form */}
+      {/* Add Task Inline Form */}
       {isAdding && (
         <form onSubmit={handleAddTask} className="clean-task-inline-form">
           <input
@@ -85,36 +75,30 @@ export default function CleanTasksCard() {
 
       {/* Checklist */}
       <div className="clean-tasks-list">
-        {tasks.length === 0 ? (
-          <div className="clean-tasks-empty">
-            <span>No tasks added yet. Create one to get started!</span>
-          </div>
-        ) : (
-          tasks.map((task) => (
-            <div 
-              key={task.id} 
-              className={`clean-task-row ${task.completed ? 'completed' : ''}`}
-              onClick={() => toggleTask(task.id)}
-            >
-              {/* Checkbox */}
-              <div className={`clean-task-checkbox ${task.completed ? 'checked' : ''}`}>
-                {task.completed && <Check size={12} strokeWidth={3} />}
-              </div>
-
-              {/* Title */}
-              <span className="clean-task-label">{task.title}</span>
-
-              {/* Delete Button */}
-              <button 
-                className="clean-task-del-btn" 
-                onClick={(e) => deleteTask(task.id, e)}
-                title="Delete task"
-              >
-                <Trash2 size={12} />
-              </button>
+        {tasks.map((task) => (
+          <div 
+            key={task.id} 
+            className={`clean-task-row ${task.completed ? 'completed' : ''}`}
+            onClick={() => toggleTask(task.id)}
+          >
+            {/* Square Checkbox */}
+            <div className={`clean-task-checkbox ${task.completed ? 'checked' : ''}`}>
+              {task.completed && <Check size={12} strokeWidth={3} />}
             </div>
-          ))
-        )}
+
+            {/* Title */}
+            <span className="clean-task-label">{task.title}</span>
+
+            {/* Delete */}
+            <button 
+              className="clean-task-del-btn" 
+              onClick={(e) => deleteTask(task.id, e)}
+              title="Delete task"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
