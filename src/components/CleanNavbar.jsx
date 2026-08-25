@@ -342,8 +342,9 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
         </div>
 
         {/* Center: Real-Time Info Bar */}
+        {/* ORDER: 1. Local Time Block -> 2. + Add City Clock / Added Clocks -> 3. Weather Block */}
         <div className="top-info-bar">
-          {/* 1. Local Time & Date with Detected Place Name */}
+          {/* 1. Local Time & Date Block */}
           <div 
             className="top-widget local-time-widget clickable-widget" 
             onClick={() => setIsWeatherModalOpen(true)}
@@ -360,24 +361,19 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
             </div>
           </div>
 
-          {/* 2. Live Weather for that Location */}
-          <div 
-            className="top-widget weather-widget-top clickable-widget"
-            onClick={() => setIsWeatherModalOpen(true)}
-            title="Live weather forecast (Click to search any village, city or use GPS)"
-            role="button"
-            tabIndex={0}
-          >
-            <div className="top-widget-title-row">
-              <span className="top-widget-time">{weather.temp}</span>
-              <WeatherIcon condition={weather.condition} size={14} />
-            </div>
-            <div className="top-widget-sub-row">
-              <span className="top-widget-sub">{weather.condition} · {weather.location}</span>
-            </div>
-          </div>
+          {/* 2. + Add City Clock Button (placed right after Local Time) */}
+          {foreignClocks.length < 4 && (
+            <button
+              className="top-widget-add-clock-btn"
+              onClick={() => setIsAddClockModalOpen(true)}
+              title={`Add worldwide city or place clock (${foreignClocks.length}/4)`}
+            >
+              <Globe2 size={13} color="var(--primary)" />
+              <span>+ Add City Clock</span>
+            </button>
+          )}
 
-          {/* 3. Up to 4 Addon Worldwide Place Clocks */}
+          {/* 3. Up to 4 Added Place Clocks */}
           {foreignClocks.map((clock) => (
             <div key={clock.id} className="top-widget foreign-clock-widget">
               <div className="top-widget-title-row">
@@ -398,17 +394,22 @@ export default function CleanNavbar({ isDarkMode, onToggleDarkMode, customBg, on
             </div>
           ))}
 
-          {/* 4. Add City Clock Button (visible if < 4 clocks) */}
-          {foreignClocks.length < 4 && (
-            <button
-              className="top-widget-add-clock-btn"
-              onClick={() => setIsAddClockModalOpen(true)}
-              title={`Add worldwide city or place clock (${foreignClocks.length}/4)`}
-            >
-              <Globe2 size={13} color="var(--primary)" />
-              <span>+ Add City Clock</span>
-            </button>
-          )}
+          {/* 4. Live Weather Block */}
+          <div 
+            className="top-widget weather-widget-top clickable-widget"
+            onClick={() => setIsWeatherModalOpen(true)}
+            title="Live weather forecast (Click to search any village, city or use GPS)"
+            role="button"
+            tabIndex={0}
+          >
+            <div className="top-widget-title-row">
+              <span className="top-widget-time">{weather.temp}</span>
+              <WeatherIcon condition={weather.condition} size={14} />
+            </div>
+            <div className="top-widget-sub-row">
+              <span className="top-widget-sub">{weather.condition} · {weather.location}</span>
+            </div>
+          </div>
         </div>
 
         {/* Right: Choose BG & Theme Toggle */}
