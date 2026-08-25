@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Sun, 
   Moon, 
-  Maximize2, 
-  Minimize2,
   Globe2,
-  Plus,
   X
 } from 'lucide-react';
 import ShinyText from './ShinyText';
@@ -190,41 +187,6 @@ export default function CleanNavbar({
   isDarkMode,
   onToggleDarkMode,
 }) {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const toggleFullscreen = () => {
-    const doc = document;
-    const docEl = document.documentElement;
-    const isFs = doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement;
-
-    if (!isFs) {
-      if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-      else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
-      else if (docEl.mozRequestFullScreen) docEl.mozRequestFullScreen();
-      else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
-    } else {
-      if (doc.exitFullscreen) doc.exitFullscreen().catch(() => {});
-      else if (doc.webkitExitFullscreen) doc.webkitExitFullscreen();
-      else if (doc.mozCancelFullScreen) doc.mozCancelFullScreen();
-      else if (doc.msExitFullscreen) doc.msExitFullscreen();
-    }
-  };
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement));
-    };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    document.addEventListener('webkitfullscreenchange', handleFsChange);
-    document.addEventListener('mozfullscreenchange', handleFsChange);
-    document.addEventListener('MSFullscreenChange', handleFsChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFsChange);
-      document.removeEventListener('webkitfullscreenchange', handleFsChange);
-      document.removeEventListener('mozfullscreenchange', handleFsChange);
-      document.removeEventListener('MSFullscreenChange', handleFsChange);
-    };
-  }, []);
 
   return (
     <header className="timora-clean-navbar">
@@ -245,7 +207,7 @@ export default function CleanNavbar({
       {/* Center: 3 Real-Time Info Widgets */}
       <TopInfoBar isDarkMode={isDarkMode} />
 
-      {/* Right: Light/Dark + Fullscreen */}
+      {/* Right: Light/Dark */}
       <div className="navbar-controls-section">
         <button
           className="navbar-text-toggle-btn"
@@ -254,15 +216,6 @@ export default function CleanNavbar({
         >
           {isDarkMode ? <Moon size={15} /> : <Sun size={15} />}
           <span>{isDarkMode ? 'Dark' : 'Light'}</span>
-        </button>
-
-        <button
-          className="navbar-text-toggle-btn"
-          onClick={toggleFullscreen}
-          title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen (F11)'}
-        >
-          {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-          <span>{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
         </button>
       </div>
     </header>
