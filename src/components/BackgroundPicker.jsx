@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   ArrowLeft, 
@@ -8,7 +8,8 @@ import {
   Link2, 
   Image as ImageIcon, 
   Trash2,
-  Sliders
+  Clock,
+  RotateCcw
 } from 'lucide-react';
 import { WALLPAPER_CATEGORIES } from '../data/wallpapers';
 
@@ -26,15 +27,41 @@ export default function BackgroundPicker({
   const [customUrlError, setCustomUrlError] = useState('');
   const fileInputRef = useRef(null);
 
+  // Recently Used Backgrounds List (persisted in localStorage)
+  const [recentWallpapers, setRecentWallpapers] = useState(() => {
+    const saved = localStorage.getItem('timora_recent_wallpapers');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('timora_recent_wallpapers', JSON.stringify(recentWallpapers));
+  }, [recentWallpapers]);
+
   if (!isOpen) return null;
 
-  // Handle local file upload (converts image to DataURL for immediate local display)
+  // Add wallpaper to Recently Used list (avoiding duplicate URLs or colors)
+  const handleApplyWallpaper = (wp) => {
+    if (!wp) return;
+    
+    setRecentWallpapers((prev) => {
+      const filtered = prev.filter(item => {
+        if (wp.isColor) return item.value !== wp.value;
+        return item.url !== wp.url;
+      });
+      // Place newest at the front (keep top 8)
+      return [wp, ...filtered].slice(0, 8);
+    });
+
+    onSelectWallpaper(wp);
+  };
+
+  // Handle local file upload
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please upload a valid image file (PNG, JPG, WEBP).');
+      alert('Please upload a valid image file (PNG, JPG, WEBP, GIF).');
       return;
     }
 
@@ -47,7 +74,7 @@ export default function BackgroundPicker({
         url: dataUrl,
         isCustom: true
       };
-      onSelectWallpaper(customItem);
+      handleApplyWallpaper(customItem);
     };
     reader.readAsDataURL(file);
   };
@@ -61,16 +88,28 @@ export default function BackgroundPicker({
       new URL(customUrlInput.trim());
       const customItem = {
         id: `custom_url_${Date.now()}`,
-        title: 'Custom Web Wallpaper',
+        title: 'Web Wallpaper',
         url: customUrlInput.trim(),
         isCustom: true
       };
-      onSelectWallpaper(customItem);
+      handleApplyWallpaper(customItem);
       setCustomUrlInput('');
       setCustomUrlError('');
     } catch {
       setCustomUrlError('Please enter a valid HTTP/HTTPS image URL.');
     }
+  };
+
+  const removeRecentWallpaper = (itemToRemove, e) => {
+    e.stopPropagation();
+    setRecentWallpapers(prev => prev.filter(item => {
+      if (itemToRemove.isColor) return item.value !== itemToRemove.value;
+      return item.url !== itemToRemove.url;
+    }));
+  };
+
+  const clearAllRecents = () => {
+    setRecentWallpapers([]);
   };
 
   return (
@@ -112,14 +151,14 @@ export default function BackgroundPicker({
           {/* Top Quick Actions: Upload Image from Device & Paste URL */}
           {!selectedCategory && (
             <div className="custom-upload-section">
-              <h4 className="upload-section-title">Use Your Own Image</h4>
+              <h4 className="upload-section-title">Add Background Of Your Choice</h4>
               
               <div className="upload-actions-grid">
                 {/* 1. Upload from Computer */}
                 <div 
                   className="upload-drop-card" 
                   onClick={() => fileInputRef.current?.click()}
-                  title="Upload picture from your PC / Phone"
+                  title="Upload picture from your PC or Phone"
                 >
                   <input
                     type="file"
@@ -181,18 +220,80 @@ export default function BackgroundPicker({
                     Active Wallpaper: {currentWallpaper.title || 'Custom Image'}
                   </div>
                   <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                    Custom background is applied to your workspace.
+                    Custom background is active on your workspace.
                   </div>
                 </div>
               </div>
               <button 
                 className="clear-wp-btn" 
                 onClick={onResetDefault}
-                title="Restore default clean theme"
+                title="Restore clean minimalist theme"
               >
                 <Trash2 size={13} />
                 <span>Remove</span>
               </button>
+            </div>
+          )}
+
+          {/* 🌟 RECENTLY USED BACKGROUNDS SECTION 🌟 */}
+          {!selectedCategory && recentWallpapers.length > 0 && (
+            <div className="recently-used-section">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Clock size={14} color="var(--primary)" />
+                  <h4 className="upload-section-title" style={{ margin: 0 }}>Recently Used</h4>
+                </div>
+                <button 
+                  className="clean-recents-link"
+                  onClick={clearAllRecents}
+                  title="Clear recently used history"
+                >
+                  Clear History
+                </button>
+              </div>
+
+              <div className="recent-wallpapers-grid">
+                {recentWallpapers.map((item, idx) => {
+                  const isSelected = 
+                    (item.isColor && currentWallpaper?.value === item.value) ||
+                    (!item.isColor && currentWallpaper?.url === item.url);
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`recent-wp-card ${isSelected ? 'active' : ''}`}
+                      onClick={() => onSelectWallpaper(item)}
+                      title={`Re-apply ${item.title}`}
+                    >
+                      {item.isColor ? (
+                        <div 
+                          className="recent-thumb-color" 
+                          style={{ backgroundColor: item.value }}
+                        >
+                          {isSelected && <Check size={16} color="#FFFFFF" className="recent-check-badge" />}
+                        </div>
+                      ) : (
+                        <div 
+                          className="recent-thumb-image" 
+                          style={{ backgroundImage: `url(${item.url})` }}
+                        >
+                          {isSelected && <Check size={16} color="#FFFFFF" className="recent-check-badge" />}
+                        </div>
+                      )}
+                      <div className="recent-card-footer">
+                        <span className="recent-card-title">{item.title || 'Wallpaper'}</span>
+                        <button 
+                          className="recent-del-btn" 
+                          onClick={(e) => removeRecentWallpaper(item, e)}
+                          title="Remove from recents"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -239,7 +340,7 @@ export default function BackgroundPicker({
                   <div
                     key={item.id}
                     className={`subgallery-thumb-card ${isSelected ? 'active-thumb' : ''}`}
-                    onClick={() => onSelectWallpaper(item)}
+                    onClick={() => handleApplyWallpaper(item)}
                     title={item.title}
                   >
                     {item.isColor ? (
