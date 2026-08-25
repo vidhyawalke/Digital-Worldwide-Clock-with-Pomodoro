@@ -4,8 +4,8 @@ import {
   SkipForward,
   Volume2,
   VolumeX,
-  Plus,
-  Minus
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import ShinyText from './ShinyText';
@@ -22,37 +22,50 @@ const FOCUS_PRESETS = [
 
 export default function CenterPomodoroCard({ isDarkMode }) {
   const [selectedPresetId, setSelectedPresetId] = useState('work');
-  const [customMinutes, setCustomMinutes] = useState(20);
-  const [activeMinutes, setActiveMinutes] = useState(25);
+  
+  // Custom Time Pickers (Hours, Minutes, Seconds)
+  const [customHours, setCustomHours] = useState(0);
+  const [customMinutes, setCustomMinutes] = useState(25);
+  const [customSeconds, setCustomSeconds] = useState(0);
+
+  const [activeTotalSeconds, setActiveTotalSeconds] = useState(25 * 60);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const handleSelectPreset = (preset) => {
-    setSelectedPresetId(preset.id);
-    const mins = preset.id === 'custom' ? customMinutes : preset.minutes;
-    setActiveMinutes(mins);
-    setSecondsLeft(mins * 60);
+  // Sync custom time changes to timer when not running
+  const updateCustomTimer = (h, m, s) => {
+    const total = h * 3600 + m * 60 + s;
+    const finalTotal = Math.max(1, total);
+    setActiveTotalSeconds(finalTotal);
+    setSecondsLeft(finalTotal);
     setIsRunning(false);
   };
 
-  const handleCustomMinutesChange = (newMins) => {
-    const val = Math.max(1, Math.min(360, Number(newMins) || 1));
-    setCustomMinutes(val);
-    if (selectedPresetId === 'custom') {
-      setActiveMinutes(val);
-      setSecondsLeft(val * 60);
-      setIsRunning(false);
+  const handleSelectPreset = (preset) => {
+    setSelectedPresetId(preset.id);
+    if (preset.id === 'custom') {
+      updateCustomTimer(customHours, customMinutes, customSeconds);
+    } else {
+      setActiveTotalSeconds(preset.minutes * 60);
+      setSecondsLeft(preset.minutes * 60);
     }
+    setIsRunning(false);
   };
 
-  const adjustCustomMinutes = (delta) => {
-    const next = Math.max(1, Math.min(360, customMinutes + delta));
-    setCustomMinutes(next);
-    if (selectedPresetId === 'custom') {
-      setActiveMinutes(next);
-      setSecondsLeft(next * 60);
-      setIsRunning(false);
+  const adjustCustom = (type, delta) => {
+    if (type === 'hours') {
+      const nextH = (customHours + delta + 24) % 24;
+      setCustomHours(nextH);
+      updateCustomTimer(nextH, customMinutes, customSeconds);
+    } else if (type === 'minutes') {
+      const nextM = (customMinutes + delta + 60) % 60;
+      setCustomMinutes(nextM);
+      updateCustomTimer(customHours, nextM, customSeconds);
+    } else if (type === 'seconds') {
+      const nextS = (customSeconds + delta + 60) % 60;
+      setCustomSeconds(nextS);
+      updateCustomTimer(customHours, customMinutes, nextS);
     }
   };
 
@@ -66,18 +79,20 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     } else if (isRunning && secondsLeft === 0) {
       if (!isMuted) soundFx.playChime('complete');
 
-      if (!selectedPresetId.includes('Break')) {
+      if (!selectedPresetId.includes('Break') && selectedPresetId !== 'custom') {
         const breakPreset = FOCUS_PRESETS.find((p) => p.id === 'shortBreak');
         if (breakPreset) {
           setSelectedPresetId(breakPreset.id);
-          setActiveMinutes(breakPreset.minutes);
+          setActiveTotalSeconds(breakPreset.minutes * 60);
           setSecondsLeft(breakPreset.minutes * 60);
         }
+      } else if (selectedPresetId === 'custom') {
+        setSecondsLeft(activeTotalSeconds);
       } else {
         const workPreset = FOCUS_PRESETS.find((p) => p.id === 'work');
         if (workPreset) {
           setSelectedPresetId(workPreset.id);
-          setActiveMinutes(workPreset.minutes);
+          setActiveTotalSeconds(workPreset.minutes * 60);
           setSecondsLeft(workPreset.minutes * 60);
         }
       }
@@ -85,7 +100,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, secondsLeft, selectedPresetId, isMuted]);
+  }, [isRunning, secondsLeft, selectedPresetId, activeTotalSeconds, isMuted]);
 
   const togglePlay = () => {
     soundFx.initContext();
@@ -95,12 +110,12 @@ export default function CenterPomodoroCard({ isDarkMode }) {
 
   const handleReset = () => {
     setIsRunning(false);
-    setSecondsLeft(activeMinutes * 60);
+    setSecondsLeft(activeTotalSeconds);
   };
 
   const handleSkip = () => {
     setIsRunning(false);
-    if (!selectedPresetId.includes('Break')) {
+    if (!selectedPresetId.includes('Break') && selectedPresetId !== 'custom') {
       const breakPreset = FOCUS_PRESETS.find((p) => p.id === 'shortBreak');
       if (breakPreset) handleSelectPreset(breakPreset);
     } else {
@@ -109,9 +124,14 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     }
   };
 
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
-  const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  // Time calculations
+  const displayHours = Math.floor(secondsLeft / 3600);
+  const displayMinutes = Math.floor((secondsLeft % 3600) / 60);
+  const displaySeconds = secondsLeft % 60;
+
+  const formattedTime = displayHours > 0
+    ? `${String(displayHours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}:${String(displaySeconds).padStart(2, '0')}`
+    : `${String(displayMinutes).padStart(2, '0')}:${String(displaySeconds).padStart(2, '0')}`;
 
   const getEstimatedCompletion = () => {
     const completionDate = new Date(Date.now() + secondsLeft * 1000);
@@ -138,7 +158,9 @@ export default function CenterPomodoroCard({ isDarkMode }) {
               ? currentPreset.isBreak
                 ? 'On a Break'
                 : `Focusing (${currentPreset.label})`
-              : 'Ready to Focus'}
+              : selectedPresetId === 'custom'
+                ? 'Set Timer'
+                : 'Ready to Focus'}
           </span>
         </div>
 
@@ -169,72 +191,132 @@ export default function CenterPomodoroCard({ isDarkMode }) {
         })}
       </div>
 
-      {/* Custom Timer Stepper (Visible when SET TIMER is active) */}
-      {selectedPresetId === 'custom' && (
-        <div className="custom-timer-stepper">
-          <button 
-            type="button" 
-            className="stepper-chip" 
-            onClick={() => adjustCustomMinutes(-5)}
-            title="Decrease 5 minutes"
-          >
-            -5m
-          </button>
-          <button 
-            type="button" 
-            className="stepper-chip" 
-            onClick={() => adjustCustomMinutes(-1)}
-            title="Decrease 1 minute"
-          >
-            -1m
-          </button>
-
-          <div className="custom-timer-input-wrap">
-            <input 
-              type="number" 
-              min="1" 
-              max="360" 
-              value={customMinutes} 
-              onChange={(e) => handleCustomMinutesChange(e.target.value)} 
-              aria-label="Custom timer minutes"
-            />
-            <span>min</span>
-          </div>
-
-          <button 
-            type="button" 
-            className="stepper-chip" 
-            onClick={() => adjustCustomMinutes(+1)}
-            title="Increase 1 minute"
-          >
-            +1m
-          </button>
-          <button 
-            type="button" 
-            className="stepper-chip" 
-            onClick={() => adjustCustomMinutes(+5)}
-            title="Increase 5 minutes"
-          >
-            +5m
-          </button>
-        </div>
-      )}
-
-      {/* Hero Timer Display */}
+      {/* Hero Timer / Set a Timer Display */}
       <div className="analog-hero-timer-box">
         <div className="corner-bracket top-left"></div>
         <div className="corner-bracket top-right"></div>
 
-        {/* Big Digits Display */}
-        <div className="analog-big-digits-display">
-          <ShinyText
-            text={formattedTime}
-            color="var(--text-main)"
-            shineColor="var(--primary)"
-            speed={4}
-            spread={120}
-          />
-        </div>
+        {/* If SET TIMER selected and NOT currently running: Show interactive Hours : Minutes : Seconds picker */}
+        {selectedPresetId === 'custom' && !isRunning ? (
+          <div className="set-timer-picker-container">
+            {/* Hours Column */}
+            <div className="time-picker-col">
+              <span className="time-picker-label">Hours</span>
+              <button 
+                type="button" 
+                className="time-picker-step-btn up" 
+                onClick={() => adjustCustom('hours', 1)}
+                title="Increase Hours"
+              >
+                <span className="faint-preview">{String((customHours + 1) % 24).padStart(2, '0')}</span>
+              </button>
+              <div className="time-picker-active-val">
+                <input
+                  type="number"
+                  min="0"
+                  max="23"
+                  value={String(customHours).padStart(2, '0')}
+                  onChange={(e) => {
+                    const v = Math.max(0, Math.min(23, parseInt(e.target.value) || 0));
+                    setCustomHours(v);
+                    updateCustomTimer(v, customMinutes, customSeconds);
+                  }}
+                />
+              </div>
+              <button 
+                type="button" 
+                className="time-picker-step-btn down" 
+                onClick={() => adjustCustom('hours', -1)}
+                title="Decrease Hours"
+              >
+                <span className="faint-preview">{String((customHours + 23) % 24).padStart(2, '0')}</span>
+              </button>
+            </div>
+
+            <span className="time-picker-colon">:</span>
+
+            {/* Minutes Column */}
+            <div className="time-picker-col">
+              <span className="time-picker-label">Minutes</span>
+              <button 
+                type="button" 
+                className="time-picker-step-btn up" 
+                onClick={() => adjustCustom('minutes', 1)}
+                title="Increase Minutes"
+              >
+                <span className="faint-preview">{String((customMinutes + 1) % 60).padStart(2, '0')}</span>
+              </button>
+              <div className="time-picker-active-val">
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={String(customMinutes).padStart(2, '0')}
+                  onChange={(e) => {
+                    const v = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    setCustomMinutes(v);
+                    updateCustomTimer(customHours, v, customSeconds);
+                  }}
+                />
+              </div>
+              <button 
+                type="button" 
+                className="time-picker-step-btn down" 
+                onClick={() => adjustCustom('minutes', -1)}
+                title="Decrease Minutes"
+              >
+                <span className="faint-preview">{String((customMinutes + 59) % 60).padStart(2, '0')}</span>
+              </button>
+            </div>
+
+            <span className="time-picker-colon">:</span>
+
+            {/* Seconds Column */}
+            <div className="time-picker-col">
+              <span className="time-picker-label">Seconds</span>
+              <button 
+                type="button" 
+                className="time-picker-step-btn up" 
+                onClick={() => adjustCustom('seconds', 1)}
+                title="Increase Seconds"
+              >
+                <span className="faint-preview">{String((customSeconds + 1) % 60).padStart(2, '0')}</span>
+              </button>
+              <div className="time-picker-active-val">
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={String(customSeconds).padStart(2, '0')}
+                  onChange={(e) => {
+                    const v = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
+                    setCustomSeconds(v);
+                    updateCustomTimer(customHours, customMinutes, v);
+                  }}
+                />
+              </div>
+              <button 
+                type="button" 
+                className="time-picker-step-btn down" 
+                onClick={() => adjustCustom('seconds', -1)}
+                title="Decrease Seconds"
+              >
+                <span className="faint-preview">{String((customSeconds + 59) % 60).padStart(2, '0')}</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Standard Big Digits Display */
+          <div className="analog-big-digits-display">
+            <ShinyText
+              text={formattedTime}
+              color="var(--text-main)"
+              shineColor="var(--primary)"
+              speed={4}
+              spread={120}
+            />
+          </div>
+        )}
 
         {/* Estimated Completion */}
         <div className="analog-estimated-row">
