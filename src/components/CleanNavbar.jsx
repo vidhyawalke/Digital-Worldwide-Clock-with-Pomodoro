@@ -4,17 +4,17 @@ import {
   Moon, 
   Maximize2, 
   Minimize2, 
-  PanelLeft, 
   PanelLeftClose, 
   PanelLeftOpen,
-  Sparkles
+  Image as ImageIcon
 } from 'lucide-react';
 
 export default function CleanNavbar({
   isSidebarOpen,
   onToggleSidebar,
   isDarkMode,
-  setIsDarkMode
+  setIsDarkMode,
+  onOpenBackgroundPicker
 }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -50,8 +50,18 @@ export default function CleanNavbar({
         <h1 className="timora-clean-logo">Timora</h1>
       </div>
 
-      {/* Right: Light/Dark Mode & Fullscreen */}
+      {/* Right: Wallpaper, Light/Dark Mode & Fullscreen */}
       <div className="navbar-controls-section">
+        {/* Custom Wallpaper Picker Button */}
+        <button
+          className="navbar-text-toggle-btn"
+          onClick={onOpenBackgroundPicker}
+          title="Change background image or upload your own"
+        >
+          <ImageIcon size={15} color="var(--primary)" />
+          <span>Wallpaper</span>
+        </button>
+
         {/* Light / Dark Mode Toggle */}
         <button
           className="navbar-text-toggle-btn"

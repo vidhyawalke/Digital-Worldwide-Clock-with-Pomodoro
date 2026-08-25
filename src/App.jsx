@@ -30,7 +30,13 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 4. Modals State
+  // 4. Custom Wallpaper Background
+  const [currentWallpaper, setCurrentWallpaper] = useState(() => {
+    const saved = localStorage.getItem('app_wallpaper');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  // 5. Modals State
   const [isDailyReportOpen, setIsDailyReportOpen] = useState(false);
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
   const [isBgPickerOpen, setIsBgPickerOpen] = useState(false);
@@ -38,7 +44,7 @@ export default function App() {
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
-  // 5. Stats
+  // 6. Stats
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('pomodoro_stats');
     return saved ? JSON.parse(saved) : { completedToday: 4, totalMinutes: 100, streak: 12 };
@@ -54,8 +60,39 @@ export default function App() {
   }, [isDarkMode]);
 
   useEffect(() => {
+    if (currentWallpaper) {
+      localStorage.setItem('app_wallpaper', JSON.stringify(currentWallpaper));
+    } else {
+      localStorage.removeItem('app_wallpaper');
+    }
+  }, [currentWallpaper]);
+
+  useEffect(() => {
     localStorage.setItem('pomodoro_stats', JSON.stringify(stats));
   }, [stats]);
+
+  // Dynamic Background Wallpaper Style
+  const getAppBackgroundStyle = () => {
+    if (!currentWallpaper) return {};
+    if (currentWallpaper.isColor) {
+      return {
+        backgroundColor: currentWallpaper.value,
+        backgroundImage: 'none',
+      };
+    }
+    if (currentWallpaper.url) {
+      const overlay = isDarkMode
+        ? 'linear-gradient(rgba(18, 16, 14, 0.78), rgba(18, 16, 14, 0.88))'
+        : 'linear-gradient(rgba(250, 248, 245, 0.78), rgba(250, 248, 245, 0.88))';
+      return {
+        backgroundImage: `${overlay}, url(${currentWallpaper.url})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      };
+    }
+    return {};
+  };
 
   // PWA install prompt
   useEffect(() => {
@@ -103,13 +140,17 @@ export default function App() {
   };
 
   return (
-    <div className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}>
+    <div 
+      className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}
+      style={getAppBackgroundStyle()}
+    >
       {/* Top Navbar */}
       <CleanNavbar
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         isDarkMode={isDarkMode}
         setIsDarkMode={setIsDarkMode}
+        onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
       />
 
       {/* Main Workspace Frame with Sliding Window Layout */}
@@ -213,12 +254,13 @@ export default function App() {
         records={[]}
       />
 
+      {/* Custom Background Image & Wallpaper Picker Modal */}
       <BackgroundPicker
         isOpen={isBgPickerOpen}
         onClose={() => setIsBgPickerOpen(false)}
-        currentWallpaper={null}
-        onSelectWallpaper={() => {}}
-        onResetDefault={() => {}}
+        currentWallpaper={currentWallpaper}
+        onSelectWallpaper={(wp) => setCurrentWallpaper(wp)}
+        onResetDefault={() => setCurrentWallpaper(null)}
         isDailyRefresh={false}
         setIsDailyRefresh={() => {}}
       />
