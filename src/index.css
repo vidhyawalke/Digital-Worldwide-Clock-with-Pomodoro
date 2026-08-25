@@ -527,14 +527,14 @@ input, select {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: 1.68fr 1fr;
   gap: 1rem;
   overflow: hidden;
 }
 
 .stage-center-column {
   display: grid;
-  grid-template-rows: 1.18fr 0.82fr;
+  grid-template-rows: 1.38fr 0.62fr;
   gap: 0.75rem;
   min-height: 0;
   height: 100%;
@@ -551,201 +551,290 @@ input, select {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   4. CENTER POMODORO CARD (Tomato Icon, Countdown Ring, Session Dots)
+   4. HERO ANALOG LAB POMODORO STAGE (Blueprint Grid, Massive Digits, Brackets)
    ────────────────────────────────────────────────────────────────────────── */
-.clean-center-pomodoro-card {
+.hero-analog-pomodoro-stage {
   background: var(--glass-bg-card);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--glass-shadow);
-  padding: 0.85rem 1.25rem;
+  padding: 1rem 1.4rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   min-height: 0;
+  position: relative;
   overflow: hidden;
 }
 
-.clean-pomo-tabs-header {
+/* Subtle Technical Blueprint Grid Background */
+.analog-blueprint-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: 
+    linear-gradient(to right, rgba(208, 90, 63, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(208, 90, 63, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.timora-app-root.theme-dark .analog-blueprint-grid {
+  opacity: 0.35;
+  background-image: 
+    linear-gradient(to right, rgba(226, 109, 75, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 109, 75, 0.08) 1px, transparent 1px);
+}
+
+/* Top Technical Bar */
+.analog-stage-top-bar {
   display: flex;
   align-items: center;
-  background: var(--glass-bg-subtle);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border-subtle);
-  padding: 0.25rem;
-  border-radius: var(--radius-md);
-  margin-bottom: 0.35rem;
-  gap: 0.25rem;
+  justify-content: space-between;
+  width: 100%;
+  z-index: 2;
 }
 
-.clean-tab-btn {
-  padding: 0.35rem 1.15rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: all 0.15s ease;
-}
-
-.clean-tab-btn:hover {
-  color: var(--text-main);
-}
-
-.clean-tab-btn.active {
-  background: #FFFFFF;
-  color: var(--primary);
+.analog-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   font-weight: 700;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
 }
 
-.timora-app-root.theme-dark .clean-tab-btn.active {
-  background: #2D2722;
+.status-indicator-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: all 0.2s ease;
 }
 
-/* Circular Timer */
-.clean-timer-circle-wrap {
-  position: relative;
-  width: 170px;
-  height: 170px;
-  margin: 0 auto 0.35rem;
+.status-indicator-dot.active {
+  background: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.analog-sound-btn {
+  color: var(--text-muted);
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.15s ease;
 }
 
-.clean-timer-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
+.analog-sound-btn:hover {
+  color: var(--primary);
+  background: var(--bg-card-subtle);
 }
 
-.clean-ring-bg {
-  fill: none;
-  stroke: var(--border-light);
-  stroke-width: 7;
+/* Preset Category Switcher (WORK, STUDY, READ, CODE, BREAK) */
+.analog-preset-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  z-index: 2;
+  margin: 0.25rem 0 0.5rem;
+  flex-wrap: wrap;
 }
 
-.clean-ring-progress {
-  fill: none;
-  stroke: var(--primary);
-  stroke-width: 7;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s ease;
+.analog-preset-btn {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 0.25rem 0.2rem;
+  position: relative;
+  transition: color 0.15s ease;
 }
 
-.clean-timer-center-info {
+.analog-preset-btn:hover {
+  color: var(--text-main);
+}
+
+.analog-preset-btn.active {
+  color: var(--primary);
+}
+
+.analog-preset-btn.break-tab {
+  opacity: 0.75;
+}
+
+.analog-preset-btn.break-tab.active {
+  opacity: 1;
+}
+
+.analog-tab-underline {
   position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+
+/* Grand Hero Timer Box with Corner Framing Brackets */
+.analog-hero-timer-box {
+  position: relative;
+  padding: 1rem 2.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  z-index: 2;
+  width: 90%;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-.clean-tomato-emoji {
-  font-size: 1.35rem;
-  line-height: 1;
-  margin-bottom: 0.25rem;
+/* Technical Corner Framing Brackets ⌜ ⌝ ⌞ ⌟ */
+.corner-bracket {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: rgba(208, 90, 63, 0.4);
+  pointer-events: none;
 }
 
-.clean-timer-digits {
+.timora-app-root.theme-dark .corner-bracket {
+  border-color: rgba(226, 109, 75, 0.4);
+}
+
+.corner-bracket.top-left {
+  top: 0;
+  left: 0;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.corner-bracket.top-right {
+  top: 0;
+  right: 0;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.corner-bracket.bottom-left {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.corner-bracket.bottom-right {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+/* Massive Hero Countdown Digits */
+.analog-big-digits-display {
   font-family: var(--font-sans);
-  font-size: 2.65rem;
+  font-size: 5.5rem;
   font-weight: 800;
   color: var(--text-main);
   letter-spacing: -0.04em;
   line-height: 1;
+  text-align: center;
+  user-select: none;
 }
 
-.clean-timer-mode-name {
-  font-size: 0.8rem;
+@media (max-width: 1200px) {
+  .analog-big-digits-display {
+    font-size: 4.5rem;
+  }
+}
+
+/* Estimated Completion */
+.analog-estimated-row {
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.estimated-mono-label {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* Primary Framed Technical Start Button */
+.analog-primary-action-wrap {
+  z-index: 2;
+  margin: 0.35rem 0 0.2rem;
+}
+
+.analog-start-btn {
+  border: 1.5px solid var(--primary);
+  background: transparent;
   color: var(--primary);
-  margin-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.22em;
+  padding: 0.55rem 3rem;
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(208, 90, 63, 0.08);
 }
 
-/* Actions Row */
-.clean-pomo-actions-row {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 0.35rem;
-}
-
-.clean-btn-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg-subtle);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: var(--text-body);
-  font-size: 0.82rem;
-  font-weight: 600;
-  transition: all 0.15s ease;
-}
-
-.clean-btn-outline:hover {
-  background: var(--bg-card-subtle);
-  border-color: var(--text-dim);
-  color: var(--text-main);
-}
-
-.clean-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1.5rem;
-  border-radius: var(--radius-sm);
+.analog-start-btn:hover {
   background: var(--primary);
   color: #FFFFFF;
-  font-size: 0.85rem;
-  font-weight: 700;
-  box-shadow: 0 3px 12px var(--primary-glow);
-  transition: all 0.2s ease;
-}
-
-.clean-btn-primary:hover {
-  background: var(--primary-hover);
+  box-shadow: 0 4px 18px var(--primary-glow);
   transform: translateY(-1px);
 }
 
-/* Session 1 of 4 Dots */
-.clean-session-indicator-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
+.analog-start-btn.running {
+  border-color: #E11D48;
+  color: #E11D48;
 }
 
-.clean-session-label {
+.analog-start-btn.running:hover {
+  background: #E11D48;
+  color: #FFFFFF;
+  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.3);
+}
+
+/* Secondary Controls (Reset & Skip) */
+.analog-secondary-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  z-index: 2;
+}
+
+.analog-ghost-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
-  font-weight: 500;
+  transition: color 0.15s ease;
 }
 
-.clean-session-dots-row {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.clean-session-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--border-color);
-  transition: all 0.2s ease;
-}
-
-.clean-session-dot.active {
-  background: var(--primary);
+.analog-ghost-control-btn:hover {
+  color: var(--primary);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

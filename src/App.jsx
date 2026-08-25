@@ -14,7 +14,6 @@ import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
 import ShortcutsModal from './components/ShortcutsModal';
 import ShinyText from './components/ShinyText';
-import GoogleAuthModal from './components/GoogleAuthModal';
 import DailyQuoteStrip from './components/DailyQuoteStrip';
 
 export default function App() {
@@ -24,41 +23,31 @@ export default function App() {
     return saved !== null ? JSON.parse(saved) : true;
   });
 
-  // 2. Google User State
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('google_user');
-    return saved ? JSON.parse(saved) : { name: 'Vidhya Walke', email: 'vidhya@gmail.com' };
-  });
-
-  // 3. Active Tab: 'timer' | 'tasks' | 'worldClock' | 'youtube'
+  // 2. Active Tab: 'timer' | 'tasks' | 'worldClock' | 'youtube'
   const [currentTab, setCurrentTab] = useState('timer');
 
-  // 4. Theme Mode (Light by default as shown in image)
+  // 3. Theme Mode (Light by default)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('timora_dark_mode');
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 5. Custom Wallpaper Background
+  // 4. Custom Wallpaper Background
   const [currentWallpaper, setCurrentWallpaper] = useState(() => {
     const saved = localStorage.getItem('app_wallpaper');
     return saved ? JSON.parse(saved) : null;
   });
 
-  // 6. Modals State
+  // 5. Modals State
   const [isDailyReportOpen, setIsDailyReportOpen] = useState(false);
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
   const [isBgPickerOpen, setIsBgPickerOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
-  const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
-  // 6. Stats
-  const [stats, setStats] = useState(() => {
-    const saved = localStorage.getItem('pomodoro_stats');
-    return saved ? JSON.parse(saved) : { completedToday: 4, totalMinutes: 100, streak: 12 };
-  });
+  // 6. Stats (stateless sessions)
+  const [stats, setStats] = useState({ completedToday: 4, totalMinutes: 100, streak: 12 });
 
   // Save preferences
   useEffect(() => {
@@ -77,10 +66,6 @@ export default function App() {
     }
   }, [currentWallpaper]);
 
-  useEffect(() => {
-    localStorage.setItem('pomodoro_stats', JSON.stringify(stats));
-  }, [stats]);
-
   // Dynamic Background Wallpaper Style
   const getAppBackgroundStyle = () => {
     if (!currentWallpaper) return {};
@@ -92,19 +77,34 @@ export default function App() {
     }
     if (currentWallpaper.url) {
       const overlay = isDarkMode
-        ? 'linear-gradient(rgba(18, 16, 14, 0.78), rgba(18, 16, 14, 0.88))'
-        : 'linear-gradient(rgba(250, 248, 245, 0.78), rgba(250, 248, 245, 0.88))';
+        ? 'linear-gradient(rgba(18, 16, 14, 0.82), rgba(18, 16, 14, 0.90))'
+        : 'linear-gradient(rgba(250, 248, 245, 0.82), rgba(250, 248, 245, 0.90))';
       return {
         backgroundImage: `${overlay}, url(${currentWallpaper.url})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
+        backgroundAttachment: 'fixed'
       };
     }
     return {};
   };
 
-  // PWA install prompt
+  // Keyboard shortcut: '[' to toggle sliding drawer
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === '[') {
+        setIsSidebarOpen(prev => !prev);
+      }
+      if (e.key.toLowerCase() === 'b') {
+        setIsBgPickerOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // PWA install prompt handler
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
@@ -114,55 +114,16 @@ export default function App() {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
-  // Keyboard Shortcuts: `[` toggles sliding sidebar window
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-      if (e.key === '[') {
-        setIsSidebarOpen(prev => !prev);
-      } else if (e.key === '1') {
-        setCurrentTab('timer');
-      } else if (e.key === '2') {
-        setCurrentTab('worldClock');
-      } else if (e.key === '3') {
-        setCurrentTab('youtube');
-      } else if (e.key.toLowerCase() === 'b') {
-        setIsBgPickerOpen(prev => !prev);
-      } else if (e.key === '?') {
-        setIsShortcutsModalOpen(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   const handleSessionComplete = (minutes) => {
     setStats(prev => ({
       ...prev,
       completedToday: prev.completedToday + 1,
-      totalMinutes: prev.totalMinutes + minutes,
-      streak: prev.streak + 1
+      totalMinutes: prev.totalMinutes + minutes
     }));
   };
 
   const handleTimeTracked = (seconds) => {
-    // tracking
-  };
-
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('google_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('google_user');
-    }
-  }, [user]);
-
-  const handleGoogleSignIn = (newUser) => {
-    setUser(newUser);
-  };
-
-  const handleGoogleSignOut = () => {
-    setUser(null);
+    // runtime tracking if needed
   };
 
   return (
@@ -170,30 +131,28 @@ export default function App() {
       className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}
       style={getAppBackgroundStyle()}
     >
-      {/* Top Navbar */}
+      {/* ── TOP NAVBAR ── */}
       <CleanNavbar
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
-        onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
+        onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+        onOpenBgPicker={() => setIsBgPickerOpen(true)}
+        onOpenMethodModal={() => setIsMethodModalOpen(true)}
       />
 
-      {/* Main Workspace Frame with Sliding Window Layout */}
-      <div className={`timora-workspace-layout ${isSidebarOpen ? 'sidebar-visible' : 'sidebar-hidden'}`}>
-        {/* Left Sliding Sidebar Panel */}
+      {/* ── WORKSPACE 2-COLUMN STAGE & SLIDING DRAWER ── */}
+      <div className="timora-workspace-layout">
+        {/* Sliding Left Sidebar */}
         <SlidingSidebar
           isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(prev => !prev)}
+          onToggle={() => setIsSidebarOpen(false)}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
           completedSessions={stats.completedToday}
           totalTargetSessions={8}
           onOpenSettings={() => setIsBgPickerOpen(true)}
           onOpenAnalytics={() => setIsDailyReportOpen(true)}
-          user={user}
-          onOpenGoogleAuth={() => setIsGoogleAuthOpen(true)}
-          onSignOut={handleGoogleSignOut}
         />
 
         {/* Center & Right Main Content Area */}
@@ -201,7 +160,7 @@ export default function App() {
           {/* Main Dashboard / Timer View */}
           {currentTab === 'timer' && (
             <div className="timora-two-column-stage">
-              {/* Center Column: Big Pomodoro Card + Tasks Card */}
+              {/* Primary Column: Hero Analog Pomodoro Card */}
               <div className="stage-center-column">
                 <CenterPomodoroCard
                   onSessionComplete={handleSessionComplete}
@@ -210,7 +169,7 @@ export default function App() {
                 <CleanTasksCard />
               </div>
 
-              {/* Right Column: World Clock, Weather, YouTube Study Player */}
+              {/* Secondary Column: Compact World Clock, Weather, YouTube Study Player */}
               <div className="stage-right-column">
                 <CleanWorldClockCard 
                   onOpenFullWorldClock={() => setCurrentTab('worldClock')}
@@ -290,14 +249,6 @@ export default function App() {
         onResetDefault={() => setCurrentWallpaper(null)}
         isDailyRefresh={false}
         setIsDailyRefresh={() => {}}
-      />
-
-      {/* Google Authentication & Profile Sync Modal */}
-      <GoogleAuthModal
-        isOpen={isGoogleAuthOpen}
-        onClose={() => setIsGoogleAuthOpen(false)}
-        onSignInSuccess={handleGoogleSignIn}
-        currentUser={user}
       />
 
       <InstallModal
