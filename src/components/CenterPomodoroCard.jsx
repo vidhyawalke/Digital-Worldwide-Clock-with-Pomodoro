@@ -4,9 +4,8 @@ import {
   SkipForward,
   Volume2,
   VolumeX,
-  Play,
-  Pause,
-  Clock
+  Plus,
+  Minus
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import ShinyText from './ShinyText';
@@ -18,10 +17,12 @@ const FOCUS_PRESETS = [
   { id: 'code',       label: 'CODE',        minutes: 50 },
   { id: 'shortBreak', label: 'SHORT BREAK', minutes: 5,  isBreak: true },
   { id: 'longBreak',  label: 'LONG BREAK',  minutes: 15, isBreak: true },
+  { id: 'custom',     label: 'SET TIMER',   minutes: 20, isCustom: true },
 ];
 
 export default function CenterPomodoroCard({ isDarkMode }) {
   const [selectedPresetId, setSelectedPresetId] = useState('work');
+  const [customMinutes, setCustomMinutes] = useState(20);
   const [activeMinutes, setActiveMinutes] = useState(25);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
@@ -29,9 +30,30 @@ export default function CenterPomodoroCard({ isDarkMode }) {
 
   const handleSelectPreset = (preset) => {
     setSelectedPresetId(preset.id);
-    setActiveMinutes(preset.minutes);
-    setSecondsLeft(preset.minutes * 60);
+    const mins = preset.id === 'custom' ? customMinutes : preset.minutes;
+    setActiveMinutes(mins);
+    setSecondsLeft(mins * 60);
     setIsRunning(false);
+  };
+
+  const handleCustomMinutesChange = (newMins) => {
+    const val = Math.max(1, Math.min(360, Number(newMins) || 1));
+    setCustomMinutes(val);
+    if (selectedPresetId === 'custom') {
+      setActiveMinutes(val);
+      setSecondsLeft(val * 60);
+      setIsRunning(false);
+    }
+  };
+
+  const adjustCustomMinutes = (delta) => {
+    const next = Math.max(1, Math.min(360, customMinutes + delta));
+    setCustomMinutes(next);
+    if (selectedPresetId === 'custom') {
+      setActiveMinutes(next);
+      setSecondsLeft(next * 60);
+      setIsRunning(false);
+    }
   };
 
   useEffect(() => {
@@ -137,7 +159,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
           return (
             <button
               key={preset.id}
-              className={`analog-preset-btn ${isActive ? 'active' : ''} ${preset.isBreak ? 'break-tab' : ''}`}
+              className={`analog-preset-btn ${isActive ? 'active' : ''} ${preset.isBreak ? 'break-tab' : ''} ${preset.isCustom ? 'custom-tab' : ''}`}
               onClick={() => handleSelectPreset(preset)}
             >
               <span>{preset.label}</span>
@@ -146,6 +168,57 @@ export default function CenterPomodoroCard({ isDarkMode }) {
           );
         })}
       </div>
+
+      {/* Custom Timer Stepper (Visible when SET TIMER is active) */}
+      {selectedPresetId === 'custom' && (
+        <div className="custom-timer-stepper">
+          <button 
+            type="button" 
+            className="stepper-chip" 
+            onClick={() => adjustCustomMinutes(-5)}
+            title="Decrease 5 minutes"
+          >
+            -5m
+          </button>
+          <button 
+            type="button" 
+            className="stepper-chip" 
+            onClick={() => adjustCustomMinutes(-1)}
+            title="Decrease 1 minute"
+          >
+            -1m
+          </button>
+
+          <div className="custom-timer-input-wrap">
+            <input 
+              type="number" 
+              min="1" 
+              max="360" 
+              value={customMinutes} 
+              onChange={(e) => handleCustomMinutesChange(e.target.value)} 
+              aria-label="Custom timer minutes"
+            />
+            <span>min</span>
+          </div>
+
+          <button 
+            type="button" 
+            className="stepper-chip" 
+            onClick={() => adjustCustomMinutes(+1)}
+            title="Increase 1 minute"
+          >
+            +1m
+          </button>
+          <button 
+            type="button" 
+            className="stepper-chip" 
+            onClick={() => adjustCustomMinutes(+5)}
+            title="Increase 5 minutes"
+          >
+            +5m
+          </button>
+        </div>
+      )}
 
       {/* Hero Timer Display */}
       <div className="analog-hero-timer-box">
