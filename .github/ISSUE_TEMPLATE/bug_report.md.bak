@@ -1,10 +1,3 @@
-﻿<!-- 
-Project: Timora — Digital Worldwide Clock with Pomodoro
-Maintainer: vidhyawalke
-Purpose: Digital world clock + Pomodoro timer
-Notes: Human-readable comments added automatically. Review changes before committing.
--->
-
 ---
 name: Bug Report
 about: Create a report to help improve Timora
@@ -27,4 +20,3 @@ A clear and concise description of what you expected to happen.
 ### Device Details
 - OS: [e.g. Windows 11, macOS]
 - Browser: [e.g. Chrome, Safari]
-
