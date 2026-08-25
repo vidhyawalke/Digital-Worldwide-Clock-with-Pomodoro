@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Check, Plus, Trash2 } from 'lucide-react';
 
 const DEFAULT_TASKS = [
@@ -11,25 +11,10 @@ const DEFAULT_TASKS = [
 ];
 
 export default function CleanTasksCard() {
-  const [tasks, setTasks] = useState(() => {
-    const saved = sessionStorage.getItem('timora_session_tasks');
-    return saved ? JSON.parse(saved) : DEFAULT_TASKS;
-  });
+  const [tasks, setTasks] = useState(DEFAULT_TASKS);
 
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
-
-  useEffect(() => {
-    sessionStorage.setItem('timora_session_tasks', JSON.stringify(tasks));
-  }, [tasks]);
-
-  useEffect(() => {
-    const handleReset = () => {
-      setTasks(DEFAULT_TASKS);
-    };
-    window.addEventListener('timora_session_reset', handleReset);
-    return () => window.removeEventListener('timora_session_reset', handleReset);
-  }, []);
 
   const toggleTask = (id) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -52,7 +37,7 @@ export default function CleanTasksCard() {
     <div className="clean-tasks-card">
       {/* Header */}
       <div className="clean-tasks-header">
-        <h3 className="clean-tasks-title">Session Tasks</h3>
+        <h3 className="clean-tasks-title">Tasks</h3>
         <button 
           className="clean-add-task-btn"
           onClick={() => setIsAdding(!isAdding)}
