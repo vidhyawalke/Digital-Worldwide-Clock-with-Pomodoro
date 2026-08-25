@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   RotateCcw,
   SkipForward,
   Volume2,
-  VolumeX,
-  ChevronUp,
-  ChevronDown
+  VolumeX
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import ShinyText from './ShinyText';
 
 const FOCUS_PRESETS = [
-  { id: 'work',       label: 'WORK',        minutes: 25 },
-  { id: 'study',      label: 'STUDY',       minutes: 45 },
-  { id: 'read',       label: 'READ',        minutes: 30 },
-  { id: 'code',       label: 'CODE',        minutes: 50 },
-  { id: 'shortBreak', label: 'SHORT BREAK', minutes: 5,  isBreak: true },
-  { id: 'longBreak',  label: 'LONG BREAK',  minutes: 15, isBreak: true },
-  { id: 'custom',     label: 'SET TIMER',   minutes: 20, isCustom: true },
+  { id: 'work',       label: 'WORK',        hours: 0, minutes: 25, seconds: 0 },
+  { id: 'study',      label: 'STUDY',       hours: 0, minutes: 45, seconds: 0 },
+  { id: 'read',       label: 'READ',        hours: 0, minutes: 30, seconds: 0 },
+  { id: 'code',       label: 'CODE',        hours: 0, minutes: 50, seconds: 0 },
+  { id: 'shortBreak', label: 'SHORT BREAK', hours: 0, minutes: 5,  seconds: 0, isBreak: true },
+  { id: 'longBreak',  label: 'LONG BREAK',  hours: 0, minutes: 15, seconds: 0, isBreak: true },
+  { id: 'custom',     label: 'SET TIMER',   hours: 0, minutes: 25, seconds: 0, isCustom: true },
 ];
 
 export default function CenterPomodoroCard({ isDarkMode }) {
@@ -28,92 +26,123 @@ export default function CenterPomodoroCard({ isDarkMode }) {
   const [customMinutes, setCustomMinutes] = useState(25);
   const [customSeconds, setCustomSeconds] = useState(0);
 
-  const [activeTotalSeconds, setActiveTotalSeconds] = useState(25 * 60);
+  // Active duration in seconds
+  const [totalDurationSeconds, setTotalDurationSeconds] = useState(25 * 60);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  // Sync custom time changes to timer when not running
-  const updateCustomTimer = (h, m, s) => {
-    const total = h * 3600 + m * 60 + s;
-    const finalTotal = Math.max(1, total);
-    setActiveTotalSeconds(finalTotal);
-    setSecondsLeft(finalTotal);
+  // Exact timestamp reference to avoid browser background throttling
+  const endTimeRef = useRef(null);
+
+  // Synchronize custom time setting
+  const setCustomTime = (h, m, s) => {
+    const safeH = Math.max(0, Math.min(23, Number(h) || 0));
+    const safeM = Math.max(0, Math.min(59, Number(m) || 0));
+    const safeS = Math.max(0, Math.min(59, Number(s) || 0));
+    setCustomHours(safeH);
+    setCustomMinutes(safeM);
+    setCustomSeconds(safeS);
+
+    const total = safeH * 3600 + safeM * 60 + safeS;
+    const finalSec = total > 0 ? total : 60; // minimum 1 minute if all 0
+    setTotalDurationSeconds(finalSec);
+    setSecondsLeft(finalSec);
     setIsRunning(false);
   };
 
   const handleSelectPreset = (preset) => {
     setSelectedPresetId(preset.id);
-    if (preset.id === 'custom') {
-      updateCustomTimer(customHours, customMinutes, customSeconds);
-    } else {
-      setActiveTotalSeconds(preset.minutes * 60);
-      setSecondsLeft(preset.minutes * 60);
-    }
     setIsRunning(false);
+    if (preset.id === 'custom') {
+      const total = customHours * 3600 + customMinutes * 60 + customSeconds;
+      const finalSec = total > 0 ? total : 25 * 60;
+      setTotalDurationSeconds(finalSec);
+      setSecondsLeft(finalSec);
+    } else {
+      const total = preset.hours * 3600 + preset.minutes * 60 + preset.seconds;
+      setTotalDurationSeconds(total);
+      setSecondsLeft(total);
+    }
   };
 
   const adjustCustom = (type, delta) => {
     if (type === 'hours') {
       const nextH = (customHours + delta + 24) % 24;
-      setCustomHours(nextH);
-      updateCustomTimer(nextH, customMinutes, customSeconds);
+      setCustomTime(nextH, customMinutes, customSeconds);
     } else if (type === 'minutes') {
       const nextM = (customMinutes + delta + 60) % 60;
-      setCustomMinutes(nextM);
-      updateCustomTimer(customHours, nextM, customSeconds);
+      setCustomTime(customHours, nextM, customSeconds);
     } else if (type === 'seconds') {
       const nextS = (customSeconds + delta + 60) % 60;
-      setCustomSeconds(nextS);
-      updateCustomTimer(customHours, customMinutes, nextS);
+      setCustomTime(customHours, customMinutes, nextS);
     }
   };
 
+  // Accurate Wall-Clock Countdown Engine
   useEffect(() => {
     let interval = null;
 
-    if (isRunning && secondsLeft > 0) {
-      interval = setInterval(() => {
-        setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
-      }, 1000);
-    } else if (isRunning && secondsLeft === 0) {
-      if (!isMuted) soundFx.playChime('complete');
-
-      if (!selectedPresetId.includes('Break') && selectedPresetId !== 'custom') {
-        const breakPreset = FOCUS_PRESETS.find((p) => p.id === 'shortBreak');
-        if (breakPreset) {
-          setSelectedPresetId(breakPreset.id);
-          setActiveTotalSeconds(breakPreset.minutes * 60);
-          setSecondsLeft(breakPreset.minutes * 60);
-        }
-      } else if (selectedPresetId === 'custom') {
-        setSecondsLeft(activeTotalSeconds);
-      } else {
-        const workPreset = FOCUS_PRESETS.find((p) => p.id === 'work');
-        if (workPreset) {
-          setSelectedPresetId(workPreset.id);
-          setActiveTotalSeconds(workPreset.minutes * 60);
-          setSecondsLeft(workPreset.minutes * 60);
-        }
+    if (isRunning) {
+      if (!endTimeRef.current) {
+        endTimeRef.current = Date.now() + secondsLeft * 1000;
       }
-      setIsRunning(false);
+
+      interval = setInterval(() => {
+        const remainingMs = endTimeRef.current - Date.now();
+        const remSec = Math.max(0, Math.ceil(remainingMs / 1000));
+        setSecondsLeft(remSec);
+
+        if (remSec <= 0) {
+          clearInterval(interval);
+          endTimeRef.current = null;
+          setIsRunning(false);
+          if (!isMuted) soundFx.playChime('complete');
+
+          // Auto switch to break or back
+          if (!selectedPresetId.includes('Break') && selectedPresetId !== 'custom') {
+            const breakPreset = FOCUS_PRESETS.find((p) => p.id === 'shortBreak');
+            if (breakPreset) handleSelectPreset(breakPreset);
+          } else if (selectedPresetId === 'custom') {
+            setSecondsLeft(totalDurationSeconds);
+          } else {
+            const workPreset = FOCUS_PRESETS.find((p) => p.id === 'work');
+            if (workPreset) handleSelectPreset(workPreset);
+          }
+        }
+      }, 250);
+    } else {
+      endTimeRef.current = null;
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, secondsLeft, selectedPresetId, activeTotalSeconds, isMuted]);
+  }, [isRunning, secondsLeft, selectedPresetId, totalDurationSeconds, isMuted]);
 
   const togglePlay = () => {
     soundFx.initContext();
-    if (!isRunning && !isMuted) soundFx.playChime('start');
-    setIsRunning(!isRunning);
+    if (!isRunning) {
+      if (secondsLeft <= 0) {
+        setSecondsLeft(totalDurationSeconds);
+        endTimeRef.current = Date.now() + totalDurationSeconds * 1000;
+      } else {
+        endTimeRef.current = Date.now() + secondsLeft * 1000;
+      }
+      if (!isMuted) soundFx.playChime('start');
+      setIsRunning(true);
+    } else {
+      endTimeRef.current = null;
+      setIsRunning(false);
+    }
   };
 
   const handleReset = () => {
+    endTimeRef.current = null;
     setIsRunning(false);
-    setSecondsLeft(activeTotalSeconds);
+    setSecondsLeft(totalDurationSeconds);
   };
 
   const handleSkip = () => {
+    endTimeRef.current = null;
     setIsRunning(false);
     if (!selectedPresetId.includes('Break') && selectedPresetId !== 'custom') {
       const breakPreset = FOCUS_PRESETS.find((p) => p.id === 'shortBreak');
@@ -124,7 +153,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     }
   };
 
-  // Time calculations
+  // Formatted Time for Big Digits
   const displayHours = Math.floor(secondsLeft / 3600);
   const displayMinutes = Math.floor((secondsLeft % 3600) / 60);
   const displaySeconds = secondsLeft % 60;
@@ -133,8 +162,14 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     ? `${String(displayHours).padStart(2, '0')}:${String(displayMinutes).padStart(2, '0')}:${String(displaySeconds).padStart(2, '0')}`
     : `${String(displayMinutes).padStart(2, '0')}:${String(displaySeconds).padStart(2, '0')}`;
 
+  // Accurate Expected Completion Time Calculation
   const getEstimatedCompletion = () => {
-    const completionDate = new Date(Date.now() + secondsLeft * 1000);
+    if (secondsLeft <= 0) return 'Completed';
+    const targetMs = isRunning && endTimeRef.current 
+      ? endTimeRef.current 
+      : Date.now() + secondsLeft * 1000;
+      
+    const completionDate = new Date(targetMs);
     return completionDate.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
@@ -196,7 +231,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
         <div className="corner-bracket top-left"></div>
         <div className="corner-bracket top-right"></div>
 
-        {/* If SET TIMER selected and NOT currently running: Show interactive Hours : Minutes : Seconds picker */}
+        {/* If SET TIMER selected and NOT running: Show interactive Hours : Minutes : Seconds picker */}
         {selectedPresetId === 'custom' && !isRunning ? (
           <div className="set-timer-picker-container">
             {/* Hours Column */}
@@ -216,11 +251,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
                   min="0"
                   max="23"
                   value={String(customHours).padStart(2, '0')}
-                  onChange={(e) => {
-                    const v = Math.max(0, Math.min(23, parseInt(e.target.value) || 0));
-                    setCustomHours(v);
-                    updateCustomTimer(v, customMinutes, customSeconds);
-                  }}
+                  onChange={(e) => setCustomTime(e.target.value, customMinutes, customSeconds)}
                 />
               </div>
               <button 
@@ -252,11 +283,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
                   min="0"
                   max="59"
                   value={String(customMinutes).padStart(2, '0')}
-                  onChange={(e) => {
-                    const v = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
-                    setCustomMinutes(v);
-                    updateCustomTimer(customHours, v, customSeconds);
-                  }}
+                  onChange={(e) => setCustomTime(customHours, e.target.value, customSeconds)}
                 />
               </div>
               <button 
@@ -288,11 +315,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
                   min="0"
                   max="59"
                   value={String(customSeconds).padStart(2, '0')}
-                  onChange={(e) => {
-                    const v = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
-                    setCustomSeconds(v);
-                    updateCustomTimer(customHours, customMinutes, v);
-                  }}
+                  onChange={(e) => setCustomTime(customHours, customMinutes, e.target.value)}
                 />
               </div>
               <button 
@@ -320,7 +343,9 @@ export default function CenterPomodoroCard({ isDarkMode }) {
 
         {/* Estimated Completion */}
         <div className="analog-estimated-row">
-          <span className="estimated-mono-label">Done by {getEstimatedCompletion()}</span>
+          <span className="estimated-mono-label">
+            {secondsLeft <= 0 ? 'Session Complete' : `Done by ${getEstimatedCompletion()}`}
+          </span>
         </div>
 
         <div className="corner-bracket bottom-left"></div>
