@@ -7,9 +7,8 @@ import DailyQuoteStrip from './components/DailyQuoteStrip';
 import LandingScreen from './components/LandingScreen';
 
 export default function App() {
-  // Landing screen
+  // Landing splash overlay
   const [showLanding, setShowLanding] = useState(() => {
-    // Only show landing once per session
     return !sessionStorage.getItem('timora_landing_shown');
   });
 
@@ -18,46 +17,74 @@ export default function App() {
     setShowLanding(false);
   };
 
-  // Theme
+  // Theme (Dark / Light)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('timora_dark_mode');
     return saved !== null ? JSON.parse(saved) : false;
   });
 
+  // Custom Wallpaper Background (Unsplash, PC upload, or custom URL)
+  const [customBg, setCustomBg] = useState(() => {
+    return localStorage.getItem('timora_custom_bg') || null;
+  });
+
   useEffect(() => {
     localStorage.setItem('timora_dark_mode', JSON.stringify(isDarkMode));
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
   }, [isDarkMode]);
 
-
-
-  if (showLanding) {
-    return <LandingScreen onComplete={handleLandingComplete} />;
-  }
+  useEffect(() => {
+    if (customBg) {
+      localStorage.setItem('timora_custom_bg', customBg);
+    } else {
+      localStorage.removeItem('timora_custom_bg');
+    }
+  }, [customBg]);
 
   return (
-    <div className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}>
-      {/* ── TOP NAVBAR (Logo + 3 Widgets + Controls) ── */}
+    <div 
+      className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'} ${customBg ? 'has-custom-wallpaper' : ''}`}
+      style={customBg ? { backgroundImage: `url("${customBg}")` } : {}}
+    >
+      {/* Subtle glass overlay scrim when custom background is active */}
+      {customBg && <div className="wallpaper-scrim-overlay" />}
+
+      {/* ── SPLASH OVERLAY (Initial session load) ── */}
+      {showLanding && (
+        <LandingScreen
+          isDarkMode={isDarkMode}
+          onComplete={handleLandingComplete}
+        />
+      )}
+
+      {/* ── TOP NAVBAR (Logo + Clocks + Weather + BG Picker + Theme Toggle) ── */}
       <CleanNavbar
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+        customBg={customBg}
+        onSelectBg={(bgUrl) => setCustomBg(bgUrl)}
       />
 
-      {/* ── SINGLE STATIC MAIN STAGE ── */}
+      {/* ── MAIN TWO-COLUMN WORKSPACE (100vh Static Board) ── */}
       <main className="timora-main-content-window">
         <div className="timora-two-column-stage">
-          {/* Primary: Hero Pomodoro + Session Tasks */}
+          {/* Primary Column: Hero Pomodoro + Session Tasks */}
           <div className="stage-center-column">
             <CenterPomodoroCard isDarkMode={isDarkMode} />
             <CleanTasksCard />
           </div>
 
-          {/* Secondary: YouTube Study Player */}
+          {/* Secondary Column: YouTube Study Stream Player */}
           <div className="stage-right-column">
             <CleanYouTubeCard />
           </div>
         </div>
 
-        {/* Bottom Daily Quote Strip */}
+        {/* Bottom Daily Quote Bar */}
         <footer className="timora-bottom-quote-bar">
           <DailyQuoteStrip isDarkMode={isDarkMode} />
         </footer>

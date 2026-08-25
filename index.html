@@ -2,11 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpeg" href="./timora-logo.jpg" />
-    <link rel="apple-touch-icon" href="./timora-logo.jpg" />
-    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/png" href="/Timora_Logo_landing.png" />
+    <link rel="apple-touch-icon" href="/Timora_Logo_landing.png" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#FF4D6D" />
+    <meta name="theme-color" content="#E05638" />
     <meta name="description" content="Timora - Focus. Time. Anywhere. A world clock & pomodoro app that keeps you focused, wherever you are." />
     <title>Timora - Worldwide Clock & Pomodoro</title>
     <!-- Google Fonts: Plus Jakarta Sans, Playfair Display, Poppins, and JetBrains Mono -->
@@ -20,9 +20,9 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
+          navigator.serviceWorker.register('/sw.js')
             .then(reg => console.log('Timora SW Registered', reg))
-            .catch(err => console.log('Timora SW error:', err));
+            .catch(err => console.log('Timora SW note:', err));
         });
       }
     </script>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Play, Link2 } from 'lucide-react';
+import { Link2 } from 'lucide-react';
 
 export default function CleanYouTubeCard() {
-  const [videoId, setVideoId] = useState('lTRuBLICdyw');
+  const [videoId, setVideoId] = useState('jfKfPfyJRdk');
   const [customUrl, setCustomUrl] = useState('');
   const [showInput, setShowInput] = useState(false);
 
@@ -39,6 +39,7 @@ export default function CleanYouTubeCard() {
         </button>
       </div>
 
+      {/* Custom Link Input (toggled on demand) */}
       {showInput && (
         <form onSubmit={handleCustomSubmit} className="clean-yt-input-row">
           <input
@@ -52,11 +53,11 @@ export default function CleanYouTubeCard() {
         </form>
       )}
 
-      {/* 16:9 Player */}
+      {/* 16:9 iFrame Player */}
       <div className="clean-youtube-iframe-box">
         <iframe
           key={videoId}
-          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1`}
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1`}
           title="YouTube study player"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
