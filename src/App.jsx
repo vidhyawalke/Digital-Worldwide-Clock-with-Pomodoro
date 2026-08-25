@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import FocusTimerCard from './components/FocusTimerCard';
-import QuickClockStack from './components/QuickClockStack';
-import TasksWidget from './components/TasksWidget';
-import RightSidebar from './components/RightSidebar';
-import StudyFocusCard from './components/StudyFocusCard';
-import SummaryBar from './components/SummaryBar';
+import CleanNavbar from './components/CleanNavbar';
+import SlidingSidebar from './components/SlidingSidebar';
+import CenterPomodoroCard from './components/CenterPomodoroCard';
+import CleanTasksCard from './components/CleanTasksCard';
+import CleanWorldClockCard from './components/CleanWorldClockCard';
+import CleanWeatherCard from './components/CleanWeatherCard';
+import CleanYouTubeCard from './components/CleanYouTubeCard';
 import WorldClock from './components/WorldClock';
 import YouTubePlayer from './components/YouTubePlayer';
 import DailyReportModal from './components/DailyReportModal';
@@ -13,51 +13,51 @@ import MethodModal from './components/MethodModal';
 import BackgroundPicker from './components/BackgroundPicker';
 import InstallModal from './components/InstallModal';
 import ShortcutsModal from './components/ShortcutsModal';
-import { WALLPAPER_CATEGORIES } from './data/wallpapers';
 
 export default function App() {
-  // 1. Current active tab: 'dashboard' | 'worldClock' | 'youtube'
-  const [currentTab, setCurrentTab] = useState('dashboard');
+  // 1. Sliding Sidebar Open/Close Window state (default open, sliding window)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('timora_sidebar_open');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
-  // 2. Theme State (Light Warm Minimalist vs Dark Mode)
+  // 2. Active Tab: 'timer' | 'tasks' | 'worldClock' | 'youtube'
+  const [currentTab, setCurrentTab] = useState('timer');
+
+  // 3. Theme Mode (Light by default as shown in image)
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('timora_dark_mode');
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  // 3. 12-hour vs 24-hour preference
-  const [is24Hour, setIs24Hour] = useState(() => {
-    const saved = localStorage.getItem('is24Hour_pref');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
-
-  // 4. Wallpaper background
-  const [isBgPickerOpen, setIsBgPickerOpen] = useState(false);
-  const [currentWallpaper, setCurrentWallpaper] = useState(() => {
-    const saved = localStorage.getItem('app_wallpaper');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [isDailyRefresh, setIsDailyRefresh] = useState(() => {
-    const saved = localStorage.getItem('daily_refresh_pref');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
-
-  // 5. Modals State
+  // 4. Modals State
   const [isDailyReportOpen, setIsDailyReportOpen] = useState(false);
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false);
+  const [isBgPickerOpen, setIsBgPickerOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
 
-  // 6. Global Stats & Records
+  // 5. Stats
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('pomodoro_stats');
     return saved ? JSON.parse(saved) : { completedToday: 4, totalMinutes: 100, streak: 12 };
   });
 
-  const [taskCompletionPercent, setTaskCompletionPercent] = useState(85);
+  // Save preferences
+  useEffect(() => {
+    localStorage.setItem('timora_sidebar_open', JSON.stringify(isSidebarOpen));
+  }, [isSidebarOpen]);
 
-  // Catch PWA beforeinstallprompt
+  useEffect(() => {
+    localStorage.setItem('timora_dark_mode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('pomodoro_stats', JSON.stringify(stats));
+  }, [stats]);
+
+  // PWA install prompt
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
@@ -67,29 +67,23 @@ export default function App() {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
-  // Save preferences
-  useEffect(() => {
-    localStorage.setItem('timora_dark_mode', JSON.stringify(isDarkMode));
-  }, [isDarkMode]);
-
-  useEffect(() => {
-    localStorage.setItem('is24Hour_pref', JSON.stringify(is24Hour));
-  }, [is24Hour]);
-
-  useEffect(() => {
-    localStorage.setItem('pomodoro_stats', JSON.stringify(stats));
-  }, [stats]);
-
-  // Keyboard Shortcuts
+  // Keyboard Shortcuts: `[` toggles sliding sidebar window
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
-      if (e.key === '1') setCurrentTab('dashboard');
-      else if (e.key === '2') setCurrentTab('worldClock');
-      else if (e.key === '3') setCurrentTab('youtube');
-      else if (e.key.toLowerCase() === 'b') setIsBgPickerOpen(prev => !prev);
-      else if (e.key.toLowerCase() === 'd') setIsInstallModalOpen(prev => !prev);
-      else if (e.key === '?') setIsShortcutsModalOpen(prev => !prev);
+      if (e.key === '[') {
+        setIsSidebarOpen(prev => !prev);
+      } else if (e.key === '1') {
+        setCurrentTab('timer');
+      } else if (e.key === '2') {
+        setCurrentTab('worldClock');
+      } else if (e.key === '3') {
+        setCurrentTab('youtube');
+      } else if (e.key.toLowerCase() === 'b') {
+        setIsBgPickerOpen(prev => !prev);
+      } else if (e.key === '?') {
+        setIsShortcutsModalOpen(prev => !prev);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -105,166 +99,141 @@ export default function App() {
   };
 
   const handleTimeTracked = (seconds) => {
-    // optional granular tracking
-  };
-
-  const handleTasksChange = (tasksList) => {
-    if (tasksList.length === 0) {
-      setTaskCompletionPercent(0);
-      return;
-    }
-    const completed = tasksList.filter(t => t.completed).length;
-    setTaskCompletionPercent(Math.round((completed / tasksList.length) * 100));
-  };
-
-  const getThemeClass = () => {
-    if (isDarkMode) return 'theme-dark';
-    if (currentWallpaper) return 'theme-custom-bg';
-    return 'theme-warm-light';
+    // tracking
   };
 
   return (
-    <div className={`timora-app-root ${getThemeClass()}`}>
-      <div className="timora-main-container">
-        {/* Top Navbar */}
-        <Navbar
+    <div className={`timora-app-root ${isDarkMode ? 'theme-dark' : 'theme-light'}`}>
+      {/* Top Navbar */}
+      <CleanNavbar
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+      />
+
+      {/* Main Workspace Frame with Sliding Window Layout */}
+      <div className={`timora-workspace-layout ${isSidebarOpen ? 'sidebar-visible' : 'sidebar-hidden'}`}>
+        {/* Left Sliding Sidebar Panel */}
+        <SlidingSidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(prev => !prev)}
           currentTab={currentTab}
           setCurrentTab={setCurrentTab}
-          isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
+          completedSessions={stats.completedToday}
+          totalTargetSessions={8}
+          onOpenSettings={() => setIsBgPickerOpen(true)}
           onOpenAnalytics={() => setIsDailyReportOpen(true)}
-          onOpenMethod={() => setIsMethodModalOpen(true)}
-          onOpenBackgroundPicker={() => setIsBgPickerOpen(true)}
-          onOpenInstallModal={() => setIsInstallModalOpen(true)}
         />
 
-        {/* ── MAIN CONTENT VIEW ── */}
-        <main className="timora-content-body">
-          {/* TAB 1: MAIN DASHBOARD (Exact match to reference screenshot) */}
-          {currentTab === 'dashboard' && (
-            <div className="timora-dashboard-grid-layout">
-              {/* Column 1: Focus Timer Card */}
-              <div className="grid-area-timer">
-                <FocusTimerCard 
+        {/* Center & Right Main Content Area */}
+        <main className="timora-main-content-window">
+          {/* Main Dashboard / Timer View */}
+          {currentTab === 'timer' && (
+            <div className="timora-two-column-stage">
+              {/* Center Column: Big Pomodoro Card + Tasks Card */}
+              <div className="stage-center-column">
+                <CenterPomodoroCard
                   onSessionComplete={handleSessionComplete}
                   onTimeTracked={handleTimeTracked}
                 />
+                <CleanTasksCard />
               </div>
 
-              {/* Column 2: Quick Clock Stack (Live Clock, Weather, World Clock) */}
-              <div className="grid-area-clocks">
-                <QuickClockStack 
-                  is24Hour={is24Hour}
-                  setIs24Hour={setIs24Hour}
-                  onOpenWorldClockTab={() => setCurrentTab('worldClock')}
+              {/* Right Column: World Clock, Weather, YouTube Study Player */}
+              <div className="stage-right-column">
+                <CleanWorldClockCard 
+                  onOpenFullWorldClock={() => setCurrentTab('worldClock')}
                 />
-              </div>
-
-              {/* Column 3: Daily Routine Tasks */}
-              <div className="grid-area-tasks">
-                <TasksWidget onTasksChange={handleTasksChange} />
-              </div>
-
-              {/* Column 4: Right Sidebar (Google Account, Calendar, Progress) */}
-              <div className="grid-area-sidebar">
-                <RightSidebar 
-                  onOpenAnalytics={() => setIsDailyReportOpen(true)}
-                />
-              </div>
-
-              {/* Middle Section: Study With Focus banner (Spans cols 1-3) */}
-              <div className="grid-area-study">
-                <StudyFocusCard 
-                  onOpenFullYouTube={() => setCurrentTab('youtube')}
-                />
-              </div>
-
-              {/* Bottom Section: Summary Bar (Full width) */}
-              <div className="grid-area-summary">
-                <SummaryBar 
-                  completedSessions={stats.completedToday}
-                  targetSessions={8}
-                  focusMinutes={stats.totalMinutes}
-                  taskCompletionPercent={taskCompletionPercent}
-                  streakDays={stats.streak}
-                  onOpenAnalytics={() => setIsDailyReportOpen(true)}
-                />
+                <CleanWeatherCard />
+                <CleanYouTubeCard />
               </div>
             </div>
           )}
 
-          {/* TAB 2: FULL WORLD CLOCK VIEW */}
+          {/* Tasks Full View */}
+          {currentTab === 'tasks' && (
+            <div className="tab-full-view-container">
+              <div className="view-header-bar">
+                <button className="back-link-btn" onClick={() => setCurrentTab('timer')}>
+                  &larr; Back to Dashboard
+                </button>
+                <h2>Daily Tasks & Goals</h2>
+              </div>
+              <div style={{ maxWidth: '750px', margin: '0 auto' }}>
+                <CleanTasksCard />
+              </div>
+            </div>
+          )}
+
+          {/* Full World Clock View */}
           {currentTab === 'worldClock' && (
-            <div className="world-clock-full-view">
-              <div className="view-header-row">
-                <button 
-                  className="back-to-dash-btn"
-                  onClick={() => setCurrentTab('dashboard')}
-                >
+            <div className="tab-full-view-container">
+              <div className="view-header-bar">
+                <button className="back-link-btn" onClick={() => setCurrentTab('timer')}>
                   &larr; Back to Dashboard
                 </button>
-                <h2 className="view-title">Worldwide Timezones Explorer</h2>
+                <h2>Worldwide Timezones Explorer</h2>
               </div>
-              <WorldClock is24Hour={is24Hour} />
+              <WorldClock is24Hour={false} />
             </div>
           )}
 
-          {/* TAB 3: FULL YOUTUBE FOCUS PLAYER VIEW */}
+          {/* Full YouTube Audio Lounge View */}
           {currentTab === 'youtube' && (
-            <div className="youtube-full-view">
-              <div className="view-header-row">
-                <button 
-                  className="back-to-dash-btn"
-                  onClick={() => setCurrentTab('dashboard')}
-                >
+            <div className="tab-full-view-container">
+              <div className="view-header-bar">
+                <button className="back-link-btn" onClick={() => setCurrentTab('timer')}>
                   &larr; Back to Dashboard
                 </button>
-                <h2 className="view-title">Focus & Study Audio Lounge</h2>
+                <h2>Focus & Study Audio Lounge</h2>
               </div>
               <YouTubePlayer />
             </div>
           )}
+
+          {/* Bottom Motivational Quote */}
+          <footer className="timora-bottom-quote-bar">
+            <p className="timora-quote-text">
+              &ldquo;Discipline is choosing between what you want now and what you want most.&rdquo;
+            </p>
+          </footer>
         </main>
-
-        {/* ── MODALS ── */}
-        {/* Method Modal */}
-        <MethodModal
-          isOpen={isMethodModalOpen}
-          onClose={() => setIsMethodModalOpen(false)}
-        />
-
-        {/* Analytics & Daily Progress Report Modal */}
-        <DailyReportModal
-          isOpen={isDailyReportOpen}
-          onClose={() => setIsDailyReportOpen(false)}
-          records={[]}
-        />
-
-        {/* Wallpaper Background Customizer */}
-        <BackgroundPicker
-          isOpen={isBgPickerOpen}
-          onClose={() => setIsBgPickerOpen(false)}
-          currentWallpaper={currentWallpaper}
-          onSelectWallpaper={setCurrentWallpaper}
-          onResetDefault={() => { setCurrentWallpaper(null); setIsDailyRefresh(false); }}
-          isDailyRefresh={isDailyRefresh}
-          setIsDailyRefresh={setIsDailyRefresh}
-        />
-
-        {/* Install Modal */}
-        <InstallModal
-          isOpen={isInstallModalOpen}
-          onClose={() => setIsInstallModalOpen(false)}
-          installPrompt={installPrompt}
-          onInstallSuccess={() => setInstallPrompt(null)}
-        />
-
-        {/* Shortcuts Modal */}
-        <ShortcutsModal
-          isOpen={isShortcutsModalOpen}
-          onClose={() => setIsShortcutsModalOpen(false)}
-        />
       </div>
+
+      {/* ── MODALS ── */}
+      <MethodModal
+        isOpen={isMethodModalOpen}
+        onClose={() => setIsMethodModalOpen(false)}
+      />
+
+      <DailyReportModal
+        isOpen={isDailyReportOpen}
+        onClose={() => setIsDailyReportOpen(false)}
+        records={[]}
+      />
+
+      <BackgroundPicker
+        isOpen={isBgPickerOpen}
+        onClose={() => setIsBgPickerOpen(false)}
+        currentWallpaper={null}
+        onSelectWallpaper={() => {}}
+        onResetDefault={() => {}}
+        isDailyRefresh={false}
+        setIsDailyRefresh={() => {}}
+      />
+
+      <InstallModal
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
+        installPrompt={installPrompt}
+        onInstallSuccess={() => setInstallPrompt(null)}
+      />
+
+      <ShortcutsModal
+        isOpen={isShortcutsModalOpen}
+        onClose={() => setIsShortcutsModalOpen(false)}
+      />
     </div>
   );
 }
