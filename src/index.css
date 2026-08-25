@@ -1558,20 +1558,119 @@ input, select {
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive Media Queries */
-@media (max-width: 1100px) {
+/* ──────────────────────────────────────────────────────────────────────────
+   10. RESPONSIVE MEDIA QUERIES (Tablet & Mobile Optimized)
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Tablet Landscape & Mid-size Desktops (900px to 1180px) */
+@media (max-width: 1180px) {
+  .timora-clean-navbar {
+    padding: 0.75rem 1.25rem;
+  }
+
+  .timora-workspace-layout {
+    padding: 0.5rem 1.25rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .timora-sliding-sidebar.open {
+    width: 220px;
+  }
+
   .timora-two-column-stage {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 1rem;
+  }
+
+  .clean-timer-circle-wrap {
+    width: 210px;
+    height: 210px;
+  }
+
+  .clean-timer-digits {
+    font-size: 2.85rem;
   }
 }
 
+/* Tablet Portrait & Small Tablets (768px to 960px) */
+@media (max-width: 960px) {
+  .timora-two-column-stage {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .clean-center-pomodoro-card {
+    padding: 1.35rem 1.25rem;
+  }
+
+  .clean-tasks-card,
+  .clean-right-widget-card {
+    padding: 1.15rem 1.25rem;
+  }
+
+  /* Right column stacks as 2-column or full width on tablet */
+  .stage-right-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .clean-youtube-widget {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Small Tablets & Mobile Devices (under 768px) */
 @media (max-width: 768px) {
+  .timora-clean-navbar {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .timora-clean-logo {
+    font-size: 1.25rem;
+  }
+
+  .navbar-text-toggle-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  .timora-workspace-layout {
+    padding: 0.4rem 0.85rem 1.5rem;
+  }
+
+  /* Sidebar slides over screen as a drawer with elevation on mobile/small tablet */
   .timora-sliding-sidebar {
     position: fixed;
-    top: 60px;
+    top: 0;
     bottom: 0;
     left: 0;
-    z-index: 100;
+    z-index: 999;
+    height: 100vh;
     border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+    background: var(--bg-card);
+  }
+
+  .stage-right-column {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .subgallery-items-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .clean-pomo-tabs-header {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .clean-tab-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
   }
 }
