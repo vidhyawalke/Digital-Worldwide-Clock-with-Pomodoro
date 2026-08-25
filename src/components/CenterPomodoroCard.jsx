@@ -1,17 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Play, 
-  Pause, 
   RotateCcw, 
   SkipForward, 
   Volume2, 
-  VolumeX,
-  Camera,
-  RotateCw
+  VolumeX
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import ShinyText from './ShinyText';
-import SessionSnapshotModal from './SessionSnapshotModal';
 
 const FOCUS_PRESETS = [
   { id: 'work', label: 'WORK', minutes: 25 },
@@ -28,7 +23,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [isSnapshotOpen, setIsSnapshotOpen] = useState(false);
+
 
   // Session-based state (lives in active browser session)
   const [currentSessionIndex, setCurrentSessionIndex] = useState(() => {
@@ -71,9 +66,6 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         // Progress to next session in 1-4 cycle
         const nextIndex = (currentSessionIndex % 4) + 1;
         setCurrentSessionIndex(nextIndex);
-
-        // Auto open session status receipt modal so user gets status and can download & start fresh
-        setIsSnapshotOpen(true);
 
         // Auto transition to appropriate break
         const nextBreakId = currentSessionIndex === 4 ? 'longBreak' : 'shortBreak';
@@ -122,18 +114,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
     }
   };
 
-  // Delete current session and start fresh
-  const handleStartFreshSession = () => {
-    setIsRunning(false);
-    const workPreset = FOCUS_PRESETS.find(p => p.id === 'work') || FOCUS_PRESETS[0];
-    setSelectedPresetId(workPreset.id);
-    setActiveMinutes(workPreset.minutes);
-    setSecondsLeft(workPreset.minutes * 60);
-    setCurrentSessionIndex(1);
-    sessionStorage.setItem('timora_active_session_idx', '1');
-    sessionStorage.removeItem('timora_session_tasks');
-    window.dispatchEvent(new Event('timora_session_reset'));
-  };
+
 
   // Format time
   const minutes = Math.floor(secondsLeft / 60);
@@ -173,25 +154,14 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
           </span>
         </div>
 
-        {/* Right: Snapshot Card & Sound Chime Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-          <button 
-            className="analog-snapshot-btn"
-            onClick={() => setIsSnapshotOpen(true)}
-            title="View session status, get image receipt, and start fresh session"
-          >
-            <Camera size={13} />
-            <span>SESSION STATUS</span>
-          </button>
-
-          <button 
-            className="analog-sound-btn"
-            onClick={() => setIsMuted(!isMuted)}
-            title={isMuted ? 'Unmute timer chimes' : 'Mute timer chimes'}
-          >
-            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-          </button>
-        </div>
+        {/* Right: Sound Chime Toggle */}
+        <button 
+          className="analog-sound-btn"
+          onClick={() => setIsMuted(!isMuted)}
+          title={isMuted ? 'Unmute timer chimes' : 'Mute timer chimes'}
+        >
+          {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+        </button>
       </div>
 
       {/* Preset Category Switcher (WORK, STUDY, READ, CODE, BREAK) */}
@@ -262,16 +232,7 @@ export default function CenterPomodoroCard({ onSessionComplete, onTimeTracked, i
         </button>
       </div>
 
-      {/* Session Snapshot / Export Image Modal */}
-      <SessionSnapshotModal
-        isOpen={isSnapshotOpen}
-        onClose={() => setIsSnapshotOpen(false)}
-        sessionTag={sessionTag}
-        modeLabel={currentPreset.label}
-        activeMinutes={activeMinutes}
-        isDarkMode={isDarkMode}
-        onStartNewSession={handleStartFreshSession}
-      />
+
     </div>
   );
 }
