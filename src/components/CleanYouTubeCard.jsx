@@ -1,8 +1,23 @@
 import React, { useState } from 'react';
-import { Play, Link2 } from 'lucide-react';
+import { 
+  Headphones, 
+  Link2, 
+  Sparkles, 
+  Radio, 
+  Coffee,
+  Check,
+  Music
+} from 'lucide-react';
+
+const PRESET_STREAMS = [
+  { id: 'TURbeWK2wwg', name: 'Lofi Chillhop', icon: Headphones },
+  { id: '4xDzrJKXOOY', name: 'Synth Chill', icon: Radio },
+  { id: 'WPni755-Krg', name: 'Coffee Rain', icon: Coffee },
+  { id: '1fueZCTYkpA', name: 'Deep Piano', icon: Music },
+];
 
 export default function CleanYouTubeCard() {
-  const [videoId, setVideoId] = useState('lTRuBLICdyw');
+  const [videoId, setVideoId] = useState('TURbeWK2wwg');
   const [customUrl, setCustomUrl] = useState('');
   const [showInput, setShowInput] = useState(false);
 
@@ -29,35 +44,58 @@ export default function CleanYouTubeCard() {
     <div className="clean-right-widget-card clean-youtube-widget">
       {/* Header */}
       <div className="clean-widget-header">
-        <h3 className="clean-widget-title">YouTube Study Player</h3>
+        <div className="clean-widget-title-wrap">
+          <Headphones size={15} color="var(--primary)" />
+          <h3 className="clean-widget-title">Study & Focus Audio</h3>
+        </div>
         <button 
           className="clean-header-link-btn"
           onClick={() => setShowInput(!showInput)}
+          title="Paste custom YouTube link"
         >
           <Link2 size={12} />
-          <span>Custom</span>
+          <span>{showInput ? 'Presets' : 'Custom'}</span>
         </button>
       </div>
 
-      {showInput && (
+      {/* Preset Stream Buttons */}
+      {!showInput ? (
+        <div className="clean-yt-presets-row">
+          {PRESET_STREAMS.map((preset) => {
+            const Icon = preset.icon;
+            const isActive = videoId === preset.id;
+            return (
+              <button
+                key={preset.id}
+                className={`clean-yt-preset-btn ${isActive ? 'active' : ''}`}
+                onClick={() => setVideoId(preset.id)}
+              >
+                <Icon size={12} />
+                <span>{preset.name}</span>
+                {isActive && <Check size={10} strokeWidth={3} className="preset-check" />}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
         <form onSubmit={handleCustomSubmit} className="clean-yt-input-row">
           <input
             type="text"
-            placeholder="Paste YouTube video link..."
+            placeholder="Paste YouTube video link or ID..."
             value={customUrl}
             onChange={(e) => setCustomUrl(e.target.value)}
             autoFocus
           />
-          <button type="submit">Play</button>
+          <button type="submit">Load</button>
         </form>
       )}
 
-      {/* 16:9 Player */}
+      {/* 16:9 Player Box */}
       <div className="clean-youtube-iframe-box">
         <iframe
           key={videoId}
-          src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1`}
-          title="YouTube study player"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1`}
+          title="YouTube study ambient stream"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen

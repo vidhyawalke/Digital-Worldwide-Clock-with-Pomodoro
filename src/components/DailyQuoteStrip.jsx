@@ -15,6 +15,8 @@ export default function DailyQuoteStrip({ isDarkMode }) {
     try {
       const q = await getDailyMotivationalQuote(force);
       if (q) setQuote(q);
+    } catch {
+      // Fallback is already handled in quotesApi
     } finally {
       setIsLoading(false);
     }
@@ -27,11 +29,11 @@ export default function DailyQuoteStrip({ isDarkMode }) {
   return (
     <div className="daily-thin-quote-strip">
       <div className="quote-strip-content">
-        <Sparkles size={12} color="var(--primary)" className="quote-sparkle-icon" />
+        <Sparkles size={13} color="var(--primary)" className="quote-sparkle-icon" />
         <span className="quote-strip-text">
           <ShinyText
             text={`“${quote.text}”`}
-            color={isDarkMode ? '#BDB7AE' : '#6B655D'}
+            color={isDarkMode ? '#FAF8F5' : '#423E3B'}
             shineColor="var(--primary)"
             speed={3}
             spread={100}
@@ -41,9 +43,10 @@ export default function DailyQuoteStrip({ isDarkMode }) {
         <button
           className="quote-refresh-btn"
           onClick={() => loadQuote(true)}
-          title="Get another quote"
+          title="Get another inspiring quote"
+          aria-label="Refresh quote"
         >
-          <RefreshCw size={11} className={isLoading ? 'spin-anim' : ''} />
+          <RefreshCw size={12} className={isLoading ? 'spin-anim' : ''} />
         </button>
       </div>
     </div>

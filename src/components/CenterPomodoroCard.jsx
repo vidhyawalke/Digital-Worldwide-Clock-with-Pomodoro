@@ -3,13 +3,14 @@ import {
   RotateCcw,
   SkipForward,
   Volume2,
-  VolumeX
+  VolumeX,
+  Play,
+  Pause,
+  Clock
 } from 'lucide-react';
 import { soundFx } from '../utils/audio';
 import ShinyText from './ShinyText';
 
-// These are all the focus modes a user can pick from.
-// Work and study/code/read are focus blocks; the break ones give the brain a rest.
 const FOCUS_PRESETS = [
   { id: 'work',       label: 'WORK',        minutes: 25 },
   { id: 'study',      label: 'STUDY',       minutes: 45 },
@@ -20,22 +21,12 @@ const FOCUS_PRESETS = [
 ];
 
 export default function CenterPomodoroCard({ isDarkMode }) {
-  // Which mode the user picked (e.g. "work", "study", "shortBreak")
   const [selectedPresetId, setSelectedPresetId] = useState('work');
-
-  // How many minutes the current mode lasts — needed if the user resets
   const [activeMinutes, setActiveMinutes] = useState(25);
-
-  // The countdown itself, stored in seconds so we can tick it down smoothly
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
-
-  // Whether the timer is actively running or paused
   const [isRunning, setIsRunning] = useState(false);
-
-  // Let the user silence the start/end chimes if they find them distracting
   const [isMuted, setIsMuted] = useState(false);
 
-  // When the user taps a different focus mode, switch everything over and stop the timer
   const handleSelectPreset = (preset) => {
     setSelectedPresetId(preset.id);
     setActiveMinutes(preset.minutes);
@@ -43,7 +34,6 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     setIsRunning(false);
   };
 
-  // The heartbeat — every second, subtract one. When it hits zero, move to the next phase.
   useEffect(() => {
     let interval = null;
 
@@ -52,11 +42,8 @@ export default function CenterPomodoroCard({ isDarkMode }) {
         setSecondsLeft((prev) => (prev <= 1 ? 0 : prev - 1));
       }, 1000);
     } else if (isRunning && secondsLeft === 0) {
-      // Time's up! Play the completion chime unless the user has muted it
       if (!isMuted) soundFx.playChime('complete');
 
-      // After a focus block, automatically queue up a short break.
-      // After a break, bring the user back to a fresh work block.
       if (!selectedPresetId.includes('Break')) {
         const breakPreset = FOCUS_PRESETS.find((p) => p.id === 'shortBreak');
         if (breakPreset) {
@@ -75,24 +62,20 @@ export default function CenterPomodoroCard({ isDarkMode }) {
       setIsRunning(false);
     }
 
-    // Clean up the interval when the component re-renders or unmounts
     return () => clearInterval(interval);
   }, [isRunning, secondsLeft, selectedPresetId, isMuted]);
 
-  // Toggle between running and paused. Play a little sound when starting.
   const togglePlay = () => {
     soundFx.initContext();
     if (!isRunning && !isMuted) soundFx.playChime('start');
     setIsRunning(!isRunning);
   };
 
-  // Restart the timer from the top without changing the mode
   const handleReset = () => {
     setIsRunning(false);
     setSecondsLeft(activeMinutes * 60);
   };
 
-  // Jump to the next phase early — useful if focus/break is going long
   const handleSkip = () => {
     setIsRunning(false);
     if (!selectedPresetId.includes('Break')) {
@@ -104,12 +87,10 @@ export default function CenterPomodoroCard({ isDarkMode }) {
     }
   };
 
-  // Convert raw seconds into a nice MM:SS string for the big display
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-  // Work out what clock time the timer will finish at, so the user knows when to expect a break
   const getEstimatedCompletion = () => {
     const completionDate = new Date(Date.now() + secondsLeft * 1000);
     return completionDate.toLocaleTimeString('en-US', {
@@ -123,33 +104,33 @@ export default function CenterPomodoroCard({ isDarkMode }) {
 
   return (
     <div className="hero-analog-pomodoro-stage">
-      {/* Subtle grid in the background — gives the card a focused, structured feel */}
+      {/* Blueprint Grid Background */}
       <div className="analog-blueprint-grid"></div>
 
-      {/* Top bar: shows whether you're focusing, on a break, or just waiting to start */}
+      {/* Top Status & Sound Controls */}
       <div className="analog-stage-top-bar">
         <div className="analog-status-pill">
           <span className={`status-indicator-dot ${isRunning ? 'active' : ''}`}></span>
           <span className="status-mono-text">
             {isRunning
               ? currentPreset.isBreak
-                ? 'On a break'
-                : 'Focusing'
-              : 'Ready to focus'}
+                ? 'On a Break'
+                : `Focusing (${currentPreset.label})`
+              : 'Ready to Focus'}
           </span>
         </div>
 
-        {/* Mute button — tap to toggle the start/end chimes on or off */}
         <button
           className="analog-sound-btn"
           onClick={() => setIsMuted(!isMuted)}
           title={isMuted ? 'Unmute timer chimes' : 'Mute timer chimes'}
+          aria-label="Toggle mute"
         >
           {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
       </div>
 
-      {/* Mode picker — choose between different types of focus or a break */}
+      {/* Focus Mode Tabs */}
       <div className="analog-preset-tabs-row">
         {FOCUS_PRESETS.map((preset) => {
           const isActive = selectedPresetId === preset.id;
@@ -166,12 +147,12 @@ export default function CenterPomodoroCard({ isDarkMode }) {
         })}
       </div>
 
-      {/* The big timer — takes centre stage with decorative corner brackets */}
+      {/* Hero Timer Display */}
       <div className="analog-hero-timer-box">
         <div className="corner-bracket top-left"></div>
         <div className="corner-bracket top-right"></div>
 
-        {/* Large, shiny time digits */}
+        {/* Big Digits Display */}
         <div className="analog-big-digits-display">
           <ShinyText
             text={formattedTime}
@@ -182,7 +163,7 @@ export default function CenterPomodoroCard({ isDarkMode }) {
           />
         </div>
 
-        {/* Shows the clock time when this session will end */}
+        {/* Estimated Completion */}
         <div className="analog-estimated-row">
           <span className="estimated-mono-label">Done by {getEstimatedCompletion()}</span>
         </div>
@@ -191,23 +172,24 @@ export default function CenterPomodoroCard({ isDarkMode }) {
         <div className="corner-bracket bottom-right"></div>
       </div>
 
-      {/* The big Start / Pause button */}
+      {/* Primary Action Button */}
       <div className="analog-primary-action-wrap">
         <button
           className={`analog-start-btn ${isRunning ? 'running' : ''}`}
           onClick={togglePlay}
+          aria-label={isRunning ? 'Pause timer' : 'Start timer'}
         >
           <span>{isRunning ? 'P A U S E' : 'S T A R T'}</span>
         </button>
       </div>
 
-      {/* Small secondary controls below the main button */}
+      {/* Secondary Controls */}
       <div className="analog-secondary-controls-row">
-        <button className="analog-ghost-control-btn" onClick={handleReset}>
+        <button className="analog-ghost-control-btn" onClick={handleReset} title="Reset current session">
           <RotateCcw size={13} />
           <span>RESET</span>
         </button>
-        <button className="analog-ghost-control-btn" onClick={handleSkip}>
+        <button className="analog-ghost-control-btn" onClick={handleSkip} title="Skip to next session">
           <span>SKIP</span>
           <SkipForward size={13} />
         </button>
